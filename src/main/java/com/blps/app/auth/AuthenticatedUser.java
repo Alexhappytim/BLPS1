@@ -1,0 +1,10 @@
+package com.blps.app.auth;
+
+import com.blps.app.domain.entity.AppUser;
+
+public record AuthenticatedUser(Long id, String login) {
+
+    public static AuthenticatedUser fromEntity(AppUser user) {
+        return new AuthenticatedUser(user.getId(), user.getLogin());
+    }
+}

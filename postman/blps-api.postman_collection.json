@@ -1,0 +1,255 @@
+{
+  "info": {
+    "_postman_id": "9ec9dc28-f8ed-4dbc-a087-af7eb35611ec",
+    "name": "BLPS API",
+    "description": "Test requests for BLPS backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. List Blocks",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/blocks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "blocks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. List Tasks",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Resolve Coefficient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"difficulty\": \"HARD\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/blocks/resolve-coefficient",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "blocks",
+            "resolve-coefficient"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Submit Auto Task",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"taskId\": {{autoTaskId}},\n  \"difficulty\": \"MEDIUM\",\n  \"reviewType\": \"AUTO\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks/submit",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "submit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Submit Mentor Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "if (data && data.submissionId) {",
+              "  pm.environment.set('mentorSubmissionId', data.submissionId);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\",\n  \"reviewType\": \"MENTOR\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks/submit",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "submit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Review Mentor Submission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"submissionId\": {{mentorSubmissionId}},\n  \"approved\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/submissions/review",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "submissions",
+            "review"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. User Points",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users/points",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "points"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Open Block",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"blockId\": {{blockToOpenId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/blocks/open",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "blocks",
+            "open"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "login",
+      "value": "demo_user"
+    },
+    {
+      "key": "autoTaskId",
+      "value": "1"
+    },
+    {
+      "key": "mentorTaskId",
+      "value": "2"
+    },
+    {
+      "key": "mentorSubmissionId",
+      "value": "1"
+    },
+    {
+      "key": "blockToOpenId",
+      "value": "2"
+    }
+  ]
+}
