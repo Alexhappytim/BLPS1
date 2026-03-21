@@ -2,104 +2,136 @@
   "info": {
     "_postman_id": "9ec9dc28-f8ed-4dbc-a087-af7eb35611ec",
     "name": "BLPS API",
-    "description": "Test requests for BLPS backend",
+    "description": "Test requests for BLPS backend (multi-course aware)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. List Blocks",
+      "name": "1. List Courses (pick active course)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.test('Courses list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
+              "var preferredCode = pm.environment.get('courseCode') || 'FRONTEND';",
+              "var selected = data.find(function (c) { return c.code === preferredCode; }) || data[0];",
+              "pm.environment.set('courseId', selected.id);",
+              "pm.environment.set('courseCode', selected.code);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/blocks",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "blocks"
-          ]
+          "raw": "{{baseUrl}}/api/courses",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "courses"]
         }
       },
       "response": []
     },
     {
-      "name": "2. List Tasks",
+      "name": "2. List Blocks (for active course)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.test('Blocks list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
+              "var blockToOpen = data.find(function (b) { return b.openCost > 0; }) || data[0];",
+              "pm.environment.set('blockToOpenId', blockToOpen.id);"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/tasks",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tasks"
-          ]
+          "raw": "{{baseUrl}}/api/blocks?courseId={{courseId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blocks"],
+          "query": [{ "key": "courseId", "value": "{{courseId}}" }]
         }
       },
       "response": []
     },
     {
-      "name": "3. Resolve Coefficient",
+      "name": "3. List Tasks (for active course)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var data = pm.response.json();",
+              "pm.test('Tasks list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
+              "var autoTask = data.find(function (t) { return !t.requiresMentorReview; });",
+              "var mentorTask = data.find(function (t) { return t.requiresMentorReview; });",
+              "if (autoTask) { pm.environment.set('autoTaskId', autoTask.id); }",
+              "if (mentorTask) { pm.environment.set('mentorTaskId', mentorTask.id); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tasks?courseId={{courseId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks"],
+          "query": [{ "key": "courseId", "value": "{{courseId}}" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Resolve Coefficient",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"login\": \"{{login}}\",\n  \"difficulty\": \"HARD\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/blocks/resolve-coefficient",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "blocks",
-            "resolve-coefficient"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blocks", "resolve-coefficient"]
         }
       },
       "response": []
     },
     {
-      "name": "4. Submit Auto Task",
+      "name": "5. Submit Auto Task",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"taskId\": {{autoTaskId}},\n  \"difficulty\": \"MEDIUM\",\n  \"reviewType\": \"AUTO\"\n}"
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{autoTaskId}},\n  \"difficulty\": \"MEDIUM\",\n  \"reviewType\": \"AUTO\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/tasks/submit",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tasks",
-            "submit"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks", "submit"]
         }
       },
       "response": []
     },
     {
-      "name": "5. Submit Mentor Task",
+      "name": "6. Submit Mentor Task",
       "event": [
         {
           "listen": "test",
@@ -107,8 +139,11 @@
             "exec": [
               "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
               "var data = pm.response.json();",
+              "pm.test('submissionId returned', function () { pm.expect(data && data.submissionId).to.exist; });",
               "if (data && data.submissionId) {",
-              "  pm.environment.set('mentorSubmissionId', data.submissionId);",
+              "  var id = String(data.submissionId);",
+              "  pm.environment.set('mentorSubmissionId', id);",
+              "  pm.collectionVariables.set('mentorSubmissionId', id);",
               "}"
             ],
             "type": "text/javascript"
@@ -117,139 +152,92 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\",\n  \"reviewType\": \"MENTOR\"\n}"
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\",\n  \"reviewType\": \"MENTOR\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/tasks/submit",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tasks",
-            "submit"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tasks", "submit"]
         }
       },
       "response": []
     },
     {
-      "name": "6. Review Mentor Submission",
+      "name": "7. Review Mentor Submission",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var id = pm.environment.get('mentorSubmissionId') || pm.collectionVariables.get('mentorSubmissionId');",
+              "pm.test('mentorSubmissionId is set', function () { pm.expect(id).to.exist; });",
+              "if (id) { pm.environment.set('mentorSubmissionId', id); }"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"submissionId\": {{mentorSubmissionId}},\n  \"approved\": true\n}"
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"submissionId\": {{mentorSubmissionId}},\n  \"approved\": true\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/submissions/review",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "submissions",
-            "review"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "submissions", "review"]
         }
       },
       "response": []
     },
     {
-      "name": "7. User Points",
+      "name": "8. User Points",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\"\n}"
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}}\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/users/points",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "points"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "users", "points"]
         }
       },
       "response": []
     },
     {
-      "name": "8. Open Block",
+      "name": "9. Open Block",
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"blockId\": {{blockToOpenId}}\n}"
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"blockId\": {{blockToOpenId}}\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/blocks/open",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "blocks",
-            "open"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "blocks", "open"]
         }
       },
       "response": []
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "login",
-      "value": "demo_user"
-    },
-    {
-      "key": "autoTaskId",
-      "value": "1"
-    },
-    {
-      "key": "mentorTaskId",
-      "value": "2"
-    },
-    {
-      "key": "mentorSubmissionId",
-      "value": "1"
-    },
-    {
-      "key": "blockToOpenId",
-      "value": "2"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "login", "value": "demo_user" },
+    { "key": "courseCode", "value": "FRONTEND" },
+    { "key": "courseId", "value": "1" },
+    { "key": "autoTaskId", "value": "1" },
+    { "key": "mentorTaskId", "value": "2" },
+    { "key": "mentorSubmissionId", "value": "" },
+    { "key": "blockToOpenId", "value": "2" }
   ]
 }

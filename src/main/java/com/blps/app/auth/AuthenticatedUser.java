@@ -1,6 +1,6 @@
 package com.blps.app.auth;
 
-import com.blps.app.domain.entity.AppUser;
+import com.blps.app.domain.model.AppUser;
 
 public record AuthenticatedUser(Long id, String login) {
 

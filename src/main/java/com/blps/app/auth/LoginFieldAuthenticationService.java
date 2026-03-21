@@ -1,7 +1,7 @@
 package com.blps.app.auth;
 
-import com.blps.app.domain.entity.AppUser;
-import com.blps.app.domain.repo.AppUserRepository;
+import com.blps.app.domain.model.AppUser;
+import com.blps.app.domain.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

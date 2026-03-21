@@ -1,7 +1,10 @@
 package com.blps.app.common;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,6 +23,49 @@ public class GlobalExceptionHandler {
         Map<String, String> fields = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             fields.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+
+        ApiError error = new ApiError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Validation failed",
+                fields
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        Map<String, String> fields = new HashMap<>();
+        String message = "Invalid request body format";
+        
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            String cause = ex.getCause().getMessage();
+            if (cause.contains("Cannot deserialize value of type `java.lang.Long`")) {
+                message = "Invalid number format: expected integer value";
+            } else if (cause.contains("Cannot deserialize value of type") && cause.contains("Enum")) {
+                message = "Invalid enum value";
+            }
+        }
+
+        ApiError error = new ApiError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                fields
+        );
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> fields = new HashMap<>();
+        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
+        for (ConstraintViolation<?> violation : violations) {
+            String propertyPath = violation.getPropertyPath().toString();
+            fields.put(propertyPath, violation.getMessage());
         }
 
         ApiError error = new ApiError(
