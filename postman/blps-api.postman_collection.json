@@ -1,243 +1,643 @@
 {
   "info": {
     "_postman_id": "9ec9dc28-f8ed-4dbc-a087-af7eb35611ec",
-    "name": "BLPS API",
-    "description": "Test requests for BLPS backend (multi-course aware)",
+    "name": "BLPS API (Detailed)",
+    "description": "Detailed collection: one request per endpoint, including full CRUD and auth flows.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      { "key": "username", "value": "{{basicUsername}}", "type": "string" },
+      { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+    ]
   },
   "item": [
     {
-      "name": "1. List Courses (pick active course)",
-      "event": [
+      "name": "Auth",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-              "var data = pm.response.json();",
-              "pm.test('Courses list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
-              "var preferredCode = pm.environment.get('courseCode') || 'FRONTEND';",
-              "var selected = data.find(function (c) { return c.code === preferredCode; }) || data[0];",
-              "pm.environment.set('courseId', selected.id);",
-              "pm.environment.set('courseCode', selected.code);"
-            ]
+          "name": "POST /api/auth/register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{newUserEmail}}\",\n  \"password\": \"{{newUserPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.verificationToken) pm.environment.set('verificationToken', data.verificationToken);",
+                  "if (data.email) pm.environment.set('basicUsername', data.email);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/confirm-email",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{verificationToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/confirm-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "confirm-email"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/admin/register",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{mentorEmail}}\",\n  \"password\": \"{{mentorPassword}}\",\n  \"role\": \"MENTOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "register"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
           }
         }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/courses",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "courses"]
-        }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "2. List Blocks (for active course)",
-      "event": [
+      "name": "Courses",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-              "var data = pm.response.json();",
-              "pm.test('Blocks list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
-              "var blockToOpen = data.find(function (b) { return b.openCost > 0; }) || data[0];",
-              "pm.environment.set('blockToOpenId', blockToOpen.id);"
-            ]
+          "name": "GET /api/courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses?page={{page}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"],
+              "query": [{ "key": "page", "value": "{{page}}" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "if (data.length > 0) pm.environment.set('courseId', data[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/courses/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/courses",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{newCourseCode}}\",\n  \"title\": \"{{newCourseTitle}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.id) pm.environment.set('createdCourseId', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/courses/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{updatedCourseCode}}\",\n  \"title\": \"{{updatedCourseTitle}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{createdCourseId}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/courses/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{createdCourseId}}"]
+            }
           }
         }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/blocks?courseId={{courseId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "blocks"],
-          "query": [{ "key": "courseId", "value": "{{courseId}}" }]
-        }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "3. List Tasks (for active course)",
-      "event": [
+      "name": "Blocks",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-              "var data = pm.response.json();",
-              "pm.test('Tasks list is not empty', function () { pm.expect(Array.isArray(data) && data.length > 0).to.be.true; });",
-              "var autoTask = data.find(function (t) { return !t.requiresMentorReview; });",
-              "var mentorTask = data.find(function (t) { return t.requiresMentorReview; });",
-              "if (autoTask) { pm.environment.set('autoTaskId', autoTask.id); }",
-              "if (mentorTask) { pm.environment.set('mentorTaskId', mentorTask.id); }"
-            ]
+          "name": "GET /api/blocks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks?courseId={{courseId}}&page={{page}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks"],
+              "query": [
+                { "key": "courseId", "value": "{{courseId}}" },
+                { "key": "page", "value": "{{page}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "if (data.length > 0) pm.environment.set('blockId', data[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/blocks/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/{{blockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "{{blockId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/blocks",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{courseId}},\n  \"code\": \"{{newBlockCode}}\",\n  \"title\": \"{{newBlockTitle}}\",\n  \"openCost\": {{newBlockOpenCost}},\n  \"orderIndex\": {{newBlockOrderIndex}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.id) pm.environment.set('createdBlockId', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/blocks/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"courseId\": {{courseId}},\n  \"code\": \"{{updatedBlockCode}}\",\n  \"title\": \"{{updatedBlockTitle}}\",\n  \"openCost\": {{updatedBlockOpenCost}},\n  \"orderIndex\": {{updatedBlockOrderIndex}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/{{createdBlockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "{{createdBlockId}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/blocks/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/{{createdBlockId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "{{createdBlockId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/blocks/open",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}},\n  \"blockId\": {{blockId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/open",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "open"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/blocks/resolve-coefficient",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"difficulty\": \"MEDIUM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/resolve-coefficient",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "resolve-coefficient"]
+            }
           }
         }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/tasks?courseId={{courseId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "tasks"],
-          "query": [{ "key": "courseId", "value": "{{courseId}}" }]
-        }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "4. Resolve Coefficient",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"difficulty\": \"HARD\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/blocks/resolve-coefficient",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "blocks", "resolve-coefficient"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "5. Submit Auto Task",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{autoTaskId}},\n  \"difficulty\": \"MEDIUM\",\n  \"reviewType\": \"AUTO\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/tasks/submit",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "tasks", "submit"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "6. Submit Mentor Task",
-      "event": [
+      "name": "Tasks",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-              "var data = pm.response.json();",
-              "pm.test('submissionId returned', function () { pm.expect(data && data.submissionId).to.exist; });",
-              "if (data && data.submissionId) {",
-              "  var id = String(data.submissionId);",
-              "  pm.environment.set('mentorSubmissionId', id);",
-              "  pm.collectionVariables.set('mentorSubmissionId', id);",
-              "}"
-            ],
-            "type": "text/javascript"
+          "name": "GET /api/tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks?courseId={{courseId}}&page={{page}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                { "key": "courseId", "value": "{{courseId}}" },
+                { "key": "page", "value": "{{page}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "var autoTask = data.find(function (t) { return t.reviewType === 'AUTO'; });",
+                  "var mentorTask = data.find(function (t) { return t.reviewType === 'MENTOR'; });",
+                  "if (data.length > 0) pm.environment.set('taskId', data[0].id);",
+                  "if (autoTask) pm.environment.set('autoTaskId', autoTask.id);",
+                  "if (mentorTask) pm.environment.set('mentorTaskId', mentorTask.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api/tasks/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/tasks",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{newTaskCode}}\",\n  \"title\": \"{{newTaskTitle}}\",\n  \"basePoints\": {{newTaskBasePoints}},\n  \"reviewType\": \"{{newTaskReviewType}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.id) pm.environment.set('createdTaskId', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/tasks/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{updatedTaskCode}}\",\n  \"title\": \"{{updatedTaskTitle}}\",\n  \"basePoints\": {{updatedTaskBasePoints}},\n  \"reviewType\": \"{{updatedTaskReviewType}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{createdTaskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{createdTaskId}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/tasks/{id}",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{createdTaskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{createdTaskId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/tasks/submit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "submit"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var data = pm.response.json();",
+                  "if (data.submissionId) pm.environment.set('submissionId', data.submissionId);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submissions",
+      "item": [
+        {
+          "name": "POST /api/submissions/review",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{mentorEmail}}", "type": "string" },
+                { "key": "password", "value": "{{mentorPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{mentorEmail}}\",\n  \"courseId\": {{courseId}},\n  \"submissionId\": {{submissionId}},\n  \"approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissions/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "submissions", "review"]
+            }
           }
         }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\",\n  \"reviewType\": \"MENTOR\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/tasks/submit",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "tasks", "submit"]
-        }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "7. Review Mentor Submission",
-      "event": [
+      "name": "Users",
+      "item": [
         {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "var id = pm.environment.get('mentorSubmissionId') || pm.collectionVariables.get('mentorSubmissionId');",
-              "pm.test('mentorSubmissionId is set', function () { pm.expect(id).to.exist; });",
-              "if (id) { pm.environment.set('mentorSubmissionId', id); }"
-            ]
+          "name": "POST /api/users/points",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/points",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "points"]
+            }
           }
         }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"submissionId\": {{mentorSubmissionId}},\n  \"approved\": true\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/submissions/review",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "submissions", "review"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "8. User Points",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}}\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users/points",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "users", "points"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "9. Open Block",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"login\": \"{{login}}\",\n  \"courseId\": {{courseId}},\n  \"blockId\": {{blockToOpenId}}\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/blocks/open",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "blocks", "open"]
-        }
-      },
-      "response": []
+      ]
     }
   ],
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
-    { "key": "login", "value": "demo_user" },
-    { "key": "courseCode", "value": "FRONTEND" },
+    { "key": "page", "value": "0" },
+
+    { "key": "basicUsername", "value": "user@example.com" },
+    { "key": "basicPassword", "value": "user12345" },
+    { "key": "adminUsername", "value": "admin@blps.local" },
+    { "key": "adminPassword", "value": "admin12345" },
+    { "key": "mentorEmail", "value": "mentor@example.com" },
+    { "key": "mentorPassword", "value": "mentor12345" },
+
+    { "key": "newUserEmail", "value": "user@example.com" },
+    { "key": "newUserPassword", "value": "user12345" },
+    { "key": "verificationToken", "value": "" },
+
     { "key": "courseId", "value": "1" },
+    { "key": "createdCourseId", "value": "" },
+    { "key": "newCourseCode", "value": "SEC-COURSE" },
+    { "key": "newCourseTitle", "value": "Security Course" },
+    { "key": "updatedCourseCode", "value": "SEC-COURSE-UPD" },
+    { "key": "updatedCourseTitle", "value": "Security Course Updated" },
+
+    { "key": "blockId", "value": "1" },
+    { "key": "createdBlockId", "value": "" },
+    { "key": "newBlockCode", "value": "SEC-BLK-1" },
+    { "key": "newBlockTitle", "value": "Security Block" },
+    { "key": "newBlockOpenCost", "value": "100" },
+    { "key": "newBlockOrderIndex", "value": "1" },
+    { "key": "updatedBlockCode", "value": "SEC-BLK-1-UPD" },
+    { "key": "updatedBlockTitle", "value": "Security Block Updated" },
+    { "key": "updatedBlockOpenCost", "value": "120" },
+    { "key": "updatedBlockOrderIndex", "value": "2" },
+
+    { "key": "taskId", "value": "1" },
     { "key": "autoTaskId", "value": "1" },
     { "key": "mentorTaskId", "value": "2" },
-    { "key": "mentorSubmissionId", "value": "" },
-    { "key": "blockToOpenId", "value": "2" }
+    { "key": "createdTaskId", "value": "" },
+    { "key": "newTaskCode", "value": "SEC-T-1" },
+    { "key": "newTaskTitle", "value": "Security Task" },
+    { "key": "newTaskBasePoints", "value": "100" },
+    { "key": "newTaskReviewType", "value": "AUTO" },
+    { "key": "updatedTaskCode", "value": "SEC-T-1-UPD" },
+    { "key": "updatedTaskTitle", "value": "Security Task Updated" },
+    { "key": "updatedTaskBasePoints", "value": "120" },
+    { "key": "updatedTaskReviewType", "value": "MENTOR" },
+
+    { "key": "submissionId", "value": "" }
   ]
 }

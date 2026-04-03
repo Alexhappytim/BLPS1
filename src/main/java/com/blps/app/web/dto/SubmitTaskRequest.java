@@ -1,16 +1,15 @@
 package com.blps.app.web.dto;
 
 import com.blps.app.domain.model.Difficulty;
-import com.blps.app.domain.model.ReviewType;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record SubmitTaskRequest(
-        @NotBlank String login,
+        @NotBlank @Email String login,
         @NotNull @Positive Long courseId,
         @NotNull @Positive Long taskId,
-        @NotNull Difficulty difficulty,
-        @NotNull ReviewType reviewType
+        @NotNull Difficulty difficulty
 ) implements LoginCarrier {
 }

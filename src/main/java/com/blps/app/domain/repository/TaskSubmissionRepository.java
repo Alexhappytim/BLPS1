@@ -42,4 +42,6 @@ public interface TaskSubmissionRepository extends JpaRepository<TaskSubmission, 
                             and s.task.block.course.id = :courseId
                         """)
         long countDistinctApprovedTasksByUserAndCourse(@Param("user") AppUser user, @Param("courseId") Long courseId);
+
+        boolean existsByTask_Id(Long taskId);
 }

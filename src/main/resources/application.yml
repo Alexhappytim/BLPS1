@@ -1,4 +1,7 @@
 spring:
+  mvc:
+    problemdetails:
+      enabled: true
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/blps}
     username: ${DB_USERNAME:postgres}
@@ -29,8 +32,19 @@ server:
 
 app:
   mail:
-    enabled: ${MAIL_ENABLED:true}
+    enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:${MAIL_USERNAME:}}
+  auth:
+    verification-token-ttl-hours: ${AUTH_VERIFICATION_TTL_HOURS:24}
+    bootstrap-admin:
+      email: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@blps.local}
+      password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
 logging:
   level:

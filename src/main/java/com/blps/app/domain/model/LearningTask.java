@@ -2,6 +2,8 @@ package com.blps.app.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,8 +29,9 @@ public class LearningTask {
     @Column(nullable = false)
     private long basePoints;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean requiresMentorReview;
+    private ReviewType reviewType;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "block_id")
@@ -37,11 +40,11 @@ public class LearningTask {
     protected LearningTask() {
     }
 
-    public LearningTask(String code, String title, long basePoints, boolean requiresMentorReview, CourseBlock block) {
+    public LearningTask(String code, String title, long basePoints, ReviewType reviewType, CourseBlock block) {
         this.code = code;
         this.title = title;
         this.basePoints = basePoints;
-        this.requiresMentorReview = requiresMentorReview;
+        this.reviewType = reviewType;
         this.block = block;
     }
 
@@ -61,11 +64,23 @@ public class LearningTask {
         return basePoints;
     }
 
+    public ReviewType getReviewType() {
+        return reviewType;
+    }
+
     public boolean isRequiresMentorReview() {
-        return requiresMentorReview;
+        return reviewType == ReviewType.MENTOR;
     }
 
     public CourseBlock getBlock() {
         return block;
+    }
+
+    public void update(String code, String title, long basePoints, ReviewType reviewType, CourseBlock block) {
+        this.code = code;
+        this.title = title;
+        this.basePoints = basePoints;
+        this.reviewType = reviewType;
+        this.block = block;
     }
 }

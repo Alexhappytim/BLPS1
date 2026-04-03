@@ -68,4 +68,12 @@ public class CourseBlock {
     public Course getCourse() {
         return course;
     }
+
+    public void update(String code, String title, long openCost, int orderIndex, Course course) {
+        this.code = code;
+        this.title = title;
+        this.openCost = openCost;
+        this.orderIndex = orderIndex;
+        this.course = course;
+    }
 }

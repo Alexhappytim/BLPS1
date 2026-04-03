@@ -40,4 +40,9 @@ public class Course {
     public String getTitle() {
         return title;
     }
+
+    public void update(String code, String title) {
+        this.code = code;
+        this.title = title;
+    }
 }

@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserBlockAccessRepository extends JpaRepository<UserBlockAccess, Long> {
 
     boolean existsByUserAndBlock(AppUser user, CourseBlock block);
+
+    boolean existsByBlock_Id(Long blockId);
 }

@@ -19,14 +19,18 @@ import com.blps.app.domain.repository.TaskSubmissionRepository;
 import com.blps.app.domain.repository.UserCourseProgressRepository;
 import com.blps.app.domain.repository.UserBlockAccessRepository;
 import com.blps.app.infrastructure.notification.CourseCertificateSender;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Service
 public class LearningPlatformService {
+
+    private static final int PAGE_SIZE = 10;
 
     private final AppUserRepository appUserRepository;
     private final CourseRepository courseRepository;
@@ -65,45 +69,38 @@ public class LearningPlatformService {
     }
 
     @Transactional
-    public SubmissionResult submitTask(String login, Long courseId, Long taskId, Difficulty difficulty, ReviewType reviewType) {
+    public SubmissionResult submitTask(String login, Long courseId, Long taskId, Difficulty difficulty) {
         AppUser user = requireUser(login);
         Course course = requireCourse(courseId);
-        LearningTask task = learningTaskRepository.findById(taskId)
-                .orElseThrow(() -> new BusinessException("Task not found: " + taskId));
+        LearningTask task = requireTask(taskId);
+        ReviewType reviewType = task.getReviewType();
 
         ensureTaskBelongsToCourse(task, courseId);
-        
+
         if (!userBlockAccessRepository.existsByUserAndBlock(user, task.getBlock())) {
             throw new BusinessException("Block is not opened. Please open the block first");
         }
-        
-        UserCourseProgress progress = getOrCreateProgress(user, course);
 
-        if (task.isRequiresMentorReview() && reviewType != ReviewType.MENTOR) {
-            throw new BusinessException("This task requires mentor review");
-        }
-        if (!task.isRequiresMentorReview() && reviewType == ReviewType.MENTOR) {
-            throw new BusinessException("This task is checked automatically");
-        }
+        UserCourseProgress progress = getOrCreateProgress(user, course);
 
         long calculatedPoints = Math.round(task.getBasePoints() * resolveCoefficient(difficulty));
         int attempt = taskSubmissionRepository
-            .findByUserAndTaskAndTask_Block_Course_IdOrderBySubmittedAtDesc(user, task, courseId)
-            .size() + 1;
+                .findByUserAndTaskAndTask_Block_Course_IdOrderBySubmittedAtDesc(user, task, courseId)
+                .size() + 1;
 
         long previousAwarded = taskSubmissionRepository
-            .findFirstByUserAndTaskAndTask_Block_Course_IdAndStatusOrderBySubmittedAtDesc(
-                user,
-                task,
-                courseId,
-                SubmissionStatus.APPROVED
-            )
+                .findFirstByUserAndTaskAndTask_Block_Course_IdAndStatusOrderBySubmittedAtDesc(
+                        user,
+                        task,
+                        courseId,
+                        SubmissionStatus.APPROVED
+                )
                 .map(TaskSubmission::getAwardedPoints)
                 .orElse(0L);
 
         if (reviewType == ReviewType.AUTO) {
             long delta = calculatedPoints - previousAwarded;
-                progress.addPoints(delta);
+            progress.addPoints(delta);
             TaskSubmission submission = new TaskSubmission(
                     user,
                     task,
@@ -115,14 +112,14 @@ public class LearningPlatformService {
                     OffsetDateTime.now()
             );
             TaskSubmission saved = taskSubmissionRepository.save(submission);
-                trySendCourseCertificate(user, course, progress);
-                return new SubmissionResult(
+            trySendCourseCertificate(user, course, progress);
+            return new SubmissionResult(
                     saved.getId(),
                     saved.getStatus(),
                     calculatedPoints,
                     calculatedPoints,
                     progress.getPoints()
-                );
+            );
         }
 
         TaskSubmission pending = new TaskSubmission(
@@ -187,8 +184,7 @@ public class LearningPlatformService {
     public BlockOpenResult openBlock(String login, Long courseId, Long blockId) {
         AppUser user = requireUser(login);
         Course course = requireCourse(courseId);
-        CourseBlock block = courseBlockRepository.findById(blockId)
-                .orElseThrow(() -> new BusinessException("Block not found: " + blockId));
+        CourseBlock block = requireBlock(blockId);
 
         ensureBlockBelongsToCourse(block, courseId);
         UserCourseProgress progress = getOrCreateProgress(user, course);
@@ -214,20 +210,108 @@ public class LearningPlatformService {
     }
 
     @Transactional(readOnly = true)
-    public List<Course> courses() {
-        return courseRepository.findAll();
+    public Page<Course> courses(int page) {
+        return courseRepository.findAll(pageRequest(page));
     }
 
     @Transactional(readOnly = true)
-    public List<CourseBlock> blocks(Long courseId) {
-        requireCourse(courseId);
-        return courseBlockRepository.findByCourseIdWithCourse(courseId);
+    public Course courseById(Long id) {
+        return requireCourse(id);
+    }
+
+    @Transactional
+    public Course createCourse(String code, String title) {
+        ensureCourseCodeUnique(code, null);
+        return courseRepository.save(new Course(code, title));
+    }
+
+    @Transactional
+    public Course updateCourse(Long id, String code, String title) {
+        Course course = requireCourse(id);
+        ensureCourseCodeUnique(code, id);
+        course.update(code, title);
+        return course;
+    }
+
+    @Transactional
+    public void deleteCourse(Long id) {
+        Course course = requireCourse(id);
+        if (courseBlockRepository.existsByCourse_Id(id) || userCourseProgressRepository.existsByCourse_Id(id)) {
+            throw new BusinessException("Cannot delete course with related blocks or user progress");
+        }
+        courseRepository.delete(course);
     }
 
     @Transactional(readOnly = true)
-    public List<LearningTask> tasks(Long courseId) {
+    public Page<CourseBlock> blocks(Long courseId, int page) {
         requireCourse(courseId);
-        return learningTaskRepository.findByCourseIdWithBlock(courseId);
+        return courseBlockRepository.findPageByCourseIdWithCourse(courseId, pageRequest(page));
+    }
+
+    @Transactional(readOnly = true)
+    public CourseBlock blockById(Long id) {
+        return requireBlock(id);
+    }
+
+    @Transactional
+    public CourseBlock createBlock(Long courseId, String code, String title, long openCost, int orderIndex) {
+        Course course = requireCourse(courseId);
+        ensureBlockCodeUnique(code, null);
+        return courseBlockRepository.save(new CourseBlock(code, title, openCost, orderIndex, course));
+    }
+
+    @Transactional
+    public CourseBlock updateBlock(Long id, Long courseId, String code, String title, long openCost, int orderIndex) {
+        CourseBlock block = requireBlock(id);
+        Course course = requireCourse(courseId);
+        ensureBlockCodeUnique(code, id);
+        block.update(code, title, openCost, orderIndex, course);
+        return block;
+    }
+
+    @Transactional
+    public void deleteBlock(Long id) {
+        CourseBlock block = requireBlock(id);
+        if (learningTaskRepository.existsByBlock_Id(id) || userBlockAccessRepository.existsByBlock_Id(id)) {
+            throw new BusinessException("Cannot delete block with related tasks or access records");
+        }
+        courseBlockRepository.delete(block);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LearningTask> tasks(Long courseId, int page) {
+        requireCourse(courseId);
+        return learningTaskRepository.findPageByCourseIdWithBlock(courseId, pageRequest(page));
+    }
+
+    @Transactional(readOnly = true)
+    public LearningTask taskById(Long id) {
+        return requireTask(id);
+    }
+
+    @Transactional
+    public LearningTask createTask(Long blockId, String code, String title, long basePoints, ReviewType reviewType) {
+        CourseBlock block = requireBlock(blockId);
+        ensureTaskCodeUnique(code, null);
+        return learningTaskRepository.save(new LearningTask(code, title, basePoints, reviewType, block));
+    }
+
+    @Transactional
+    public LearningTask updateTask(Long id, Long blockId, String code, String title, long basePoints, ReviewType reviewType) {
+        LearningTask task = requireTask(id);
+        CourseBlock block = requireBlock(blockId);
+        ensureTaskCodeUnique(code, id);
+        task.update(code, title, basePoints, reviewType, block);
+        return task;
+    }
+
+    @Transactional
+    public void deleteTask(Long id) {
+        LearningTask task = requireTask(id);
+        if (taskSubmissionRepository.existsByTask_Id(id)) {
+            throw new BusinessException("Cannot delete task with existing submissions");
+        }
+        learningTaskRepository.delete(task);
     }
 
     private AppUser requireUser(String login) {
@@ -238,6 +322,16 @@ public class LearningPlatformService {
     private Course requireCourse(Long courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new BusinessException("Course not found: " + courseId));
+    }
+
+    private CourseBlock requireBlock(Long blockId) {
+        return courseBlockRepository.findByIdWithCourse(blockId)
+                .orElseThrow(() -> new BusinessException("Block not found: " + blockId));
+    }
+
+    private LearningTask requireTask(Long taskId) {
+        return learningTaskRepository.findByIdWithBlock(taskId)
+                .orElseThrow(() -> new BusinessException("Task not found: " + taskId));
     }
 
     private UserCourseProgress getOrCreateProgress(AppUser user, Course course) {
@@ -255,6 +349,36 @@ public class LearningPlatformService {
         if (!task.getBlock().getCourse().getId().equals(courseId)) {
             throw new BusinessException("Task does not belong to selected course");
         }
+    }
+
+    private void ensureCourseCodeUnique(String code, Long excludeId) {
+        boolean duplicated = excludeId == null
+                ? courseRepository.findByCode(code).isPresent()
+                : courseRepository.existsByCodeAndIdNot(code, excludeId);
+        if (duplicated) {
+            throw new BusinessException("Course code already exists: " + code);
+        }
+    }
+
+    private void ensureBlockCodeUnique(String code, Long excludeId) {
+        var existing = courseBlockRepository.findByCode(code);
+        if (existing.isPresent() && (excludeId == null || !existing.get().getId().equals(excludeId))) {
+            throw new BusinessException("Block code already exists: " + code);
+        }
+    }
+
+    private void ensureTaskCodeUnique(String code, Long excludeId) {
+        var existing = learningTaskRepository.findByCode(code);
+        if (existing.isPresent() && (excludeId == null || !existing.get().getId().equals(excludeId))) {
+            throw new BusinessException("Task code already exists: " + code);
+        }
+    }
+
+    private Pageable pageRequest(int page) {
+        if (page < 0) {
+            throw new BusinessException("Page index must be >= 0");
+        }
+        return PageRequest.of(page, PAGE_SIZE);
     }
 
     private void trySendCourseCertificate(AppUser user, Course course, UserCourseProgress progress) {

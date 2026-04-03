@@ -1,11 +1,12 @@
 package com.blps.app.web.dto;
 
 import com.blps.app.domain.model.Difficulty;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record ResolveCoefficientRequest(
-        @NotBlank String login,
+        @NotBlank @Email String login,
         @NotNull Difficulty difficulty
 ) implements LoginCarrier {
 }
