@@ -206,7 +206,9 @@ public class LearningPlatformService {
     public long userPoints(String login, Long courseId) {
         AppUser user = requireUser(login);
         Course course = requireCourse(courseId);
-        return getOrCreateProgress(user, course).getPoints();
+        return userCourseProgressRepository.findByUserAndCourse(user, course)
+                .map(UserCourseProgress::getPoints)
+                .orElse(0L);
     }
 
     @Transactional(readOnly = true)

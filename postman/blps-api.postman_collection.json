@@ -113,6 +113,617 @@
       ]
     },
     {
+      "name": "E2E Main Business Process",
+      "item": [
+        {
+          "name": "01. Register E2E User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var ts = Date.now().toString();",
+                  "pm.environment.set('e2eRunTs', ts);",
+                  "pm.environment.set('e2eUserEmail', 'e2e_user_' + ts + '@example.com');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "if (data.verificationToken) pm.environment.set('e2eVerificationToken', data.verificationToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{e2eUserEmail}}\",\n  \"password\": \"{{e2eUserPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "02. Confirm E2E User Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{e2eVerificationToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/confirm-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "confirm-email"]
+            }
+          }
+        },
+        {
+          "name": "03. Get First Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "pm.test('At least one course exists', function () { pm.expect(data.length).to.be.above(0); });",
+                  "if (data.length > 0) pm.environment.set('e2eCourseId', data[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses?page=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"],
+              "query": [{ "key": "page", "value": "0" }]
+            }
+          }
+        },
+        {
+          "name": "04. Get First Block",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "pm.test('At least one block exists', function () { pm.expect(data.length).to.be.above(0); });",
+                  "if (data.length > 0) pm.environment.set('e2eBlockId', data[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks?courseId={{e2eCourseId}}&page=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks"],
+              "query": [
+                { "key": "courseId", "value": "{{e2eCourseId}}" },
+                { "key": "page", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "05. Open Block",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"blockId\": {{e2eBlockId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blocks/open",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blocks", "open"]
+            }
+          }
+        },
+        {
+          "name": "06. Get Course Tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var payload = pm.response.json();",
+                  "var data = payload.data || [];",
+                  "var autoTask = data.find(function (t) { return t.reviewType === 'AUTO'; });",
+                  "var mentorTask = data.find(function (t) { return t.reviewType === 'MENTOR'; });",
+                  "pm.test('AUTO task exists', function () { pm.expect(autoTask).to.exist; });",
+                  "pm.test('MENTOR task exists', function () { pm.expect(mentorTask).to.exist; });",
+                  "if (autoTask) pm.environment.set('e2eAutoTaskId', autoTask.id);",
+                  "if (mentorTask) pm.environment.set('e2eMentorTaskId', mentorTask.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks?courseId={{e2eCourseId}}&page=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                { "key": "courseId", "value": "{{e2eCourseId}}" },
+                { "key": "page", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "07. Submit AUTO Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"taskId\": {{e2eAutoTaskId}},\n  \"difficulty\": \"MEDIUM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "submit"]
+            }
+          }
+        },
+        {
+          "name": "08. Submit MENTOR Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('submissionId returned', function () { pm.expect(data.submissionId).to.exist; });",
+                  "if (data.submissionId) pm.environment.set('e2eSubmissionId', data.submissionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"taskId\": {{e2eMentorTaskId}},\n  \"difficulty\": \"HARD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "submit"]
+            }
+          }
+        },
+        {
+          "name": "09. Mentor Review Submission",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{mentorEmail}}", "type": "string" },
+                { "key": "password", "value": "{{mentorPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{mentorEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"submissionId\": {{e2eSubmissionId}},\n  \"approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissions/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "submissions", "review"]
+            }
+          }
+        },
+        {
+          "name": "10. Check User Points",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Points payload has numeric points', function () { pm.expect(typeof data.points).to.eql('number'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/points",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "points"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative / Error Cases",
+      "item": [
+        {
+          "name": "401 - No auth on protected endpoint (/api/auth/me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "401 - Invalid password (/api/auth/me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "wrong-password", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "403 - USER tries admin endpoint (POST /api/courses)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
+                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"FORBIDDEN-COURSE\",\n  \"title\": \"Should be forbidden\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses"]
+            }
+          }
+        },
+        {
+          "name": "403 - USER tries mentor/admin review (POST /api/submissions/review)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
+                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": 1,\n  \"submissionId\": 1,\n  \"approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissions/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "submissions", "review"]
+            }
+          }
+        },
+        {
+          "name": "400 - Register invalid email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"12345678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "400 - Submit task invalid body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
+                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"bad-email-format\",\n  \"courseId\": -1,\n  \"taskId\": 0,\n  \"difficulty\": \"IMPOSSIBLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "submit"]
+            }
+          }
+        },
+        {
+          "name": "400 - Confirm email invalid token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"invalid-token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/confirm-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "confirm-email"]
+            }
+          }
+        },
+        {
+          "name": "404 - Unknown URL (authenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/not-existing-endpoint",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "not-existing-endpoint"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Courses",
       "item": [
         {
@@ -606,6 +1217,16 @@
     { "key": "newUserEmail", "value": "user@example.com" },
     { "key": "newUserPassword", "value": "user12345" },
     { "key": "verificationToken", "value": "" },
+
+    { "key": "e2eRunTs", "value": "" },
+    { "key": "e2eUserEmail", "value": "" },
+    { "key": "e2eUserPassword", "value": "e2eUser12345" },
+    { "key": "e2eVerificationToken", "value": "" },
+    { "key": "e2eCourseId", "value": "" },
+    { "key": "e2eBlockId", "value": "" },
+    { "key": "e2eAutoTaskId", "value": "" },
+    { "key": "e2eMentorTaskId", "value": "" },
+    { "key": "e2eSubmissionId", "value": "" },
 
     { "key": "courseId", "value": "1" },
     { "key": "createdCourseId", "value": "" },

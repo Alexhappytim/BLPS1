@@ -1,4 +1,9 @@
 spring:
+  jta:
+    enabled: true
+    narayana:
+      transaction-manager-id: ${NARAYANA_TM_ID:blps-tm}
+      log-dir: ${NARAYANA_LOG_DIR:./.narayana/tx-object-store}
   mvc:
     problemdetails:
       enabled: true
@@ -19,10 +24,14 @@ spring:
             enable: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
+        transaction:
+          coordinator_class: jta
+          jta:
+            platform: com.blps.app.infrastructure.transaction.NarayanaHibernateJtaPlatform
     open-in-view: false
   jackson:
     default-property-inclusion: non_null
@@ -32,7 +41,7 @@ server:
 
 app:
   mail:
-    enabled: ${MAIL_ENABLED:false}
+    enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:${MAIL_USERNAME:}}
   auth:
     verification-token-ttl-hours: ${AUTH_VERIFICATION_TTL_HOURS:24}
