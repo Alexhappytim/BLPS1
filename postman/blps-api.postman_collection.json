@@ -439,7 +439,43 @@
           }
         },
         {
-          "name": "10. Check User Points",
+          "name": "10. Send Course Certificate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Certificate send response has sent flag', function () { pm.expect(typeof data.sent).to.eql('boolean'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
+                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{e2eUserEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{e2eCourseId}}/certificate/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{e2eCourseId}}", "certificate", "send"]
+            }
+          }
+        },
+        {
+          "name": "11. Check User Points",
           "event": [
             {
               "listen": "test",
@@ -838,6 +874,29 @@
               "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "courses", "{{createdCourseId}}"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/courses/{id}/certificate/send",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
+                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{basicUsername}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/certificate/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "certificate", "send"]
             }
           }
         }

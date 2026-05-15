@@ -1,7 +1,10 @@
 package com.blps.app.web.controller;
 
 import com.blps.app.application.service.LearningPlatformService;
+import com.blps.app.auth.AuthenticationService;
 import com.blps.app.domain.model.Course;
+import com.blps.app.web.dto.CourseCertificateSendRequest;
+import com.blps.app.web.dto.CourseCertificateSendResponse;
 import com.blps.app.web.dto.CourseDto;
 import com.blps.app.web.dto.CourseUpsertRequest;
 import com.blps.app.web.dto.PagedResponse;
@@ -26,9 +29,12 @@ import java.util.stream.Collectors;
 @Validated
 public class CoursesController {
 
+    private final AuthenticationService authenticationService;
     private final LearningPlatformService learningPlatformService;
 
-    public CoursesController(LearningPlatformService learningPlatformService) {
+    public CoursesController(AuthenticationService authenticationService,
+                             LearningPlatformService learningPlatformService) {
+        this.authenticationService = authenticationService;
         this.learningPlatformService = learningPlatformService;
     }
 
@@ -61,6 +67,14 @@ public class CoursesController {
     @DeleteMapping("/{id}")
     public void deleteCourse(@PathVariable @Positive Long id) {
         learningPlatformService.deleteCourse(id);
+    }
+
+    @PostMapping("/{id}/certificate/send")
+    public CourseCertificateSendResponse sendCertificate(@PathVariable("id") @Positive Long courseId,
+                                                         @Valid @RequestBody CourseCertificateSendRequest request) {
+        authenticationService.authenticateByLogin(request.login());
+        boolean sent = learningPlatformService.sendCourseCertificate(request.login(), courseId);
+        return new CourseCertificateSendResponse(request.login(), courseId, sent);
     }
 
     private CourseDto toDto(Course course) {

@@ -59,7 +59,6 @@ public class LearningPlatformService {
         this.courseCertificateSender = courseCertificateSender;
     }
 
-    @Transactional(readOnly = true)
     public double resolveCoefficient(Difficulty difficulty) {
         return switch (difficulty) {
             case EASY -> 1.0;
@@ -202,7 +201,34 @@ public class LearningPlatformService {
         return new BlockOpenResult(blockId, false, progress.getPoints());
     }
 
-    @Transactional(readOnly = true)
+    public boolean sendCourseCertificate(String login, Long courseId) {
+        AppUser user = requireUser(login);
+        Course course = requireCourse(courseId);
+        UserCourseProgress progress = getOrCreateProgress(user, course);
+
+        if (progress.isCertificateSent()) {
+            return false;
+        }
+
+        long totalTasksInCourse = learningTaskRepository.countByBlock_Course_Id(course.getId());
+        if (totalTasksInCourse == 0) {
+            throw new BusinessException("Course does not contain tasks");
+        }
+
+        long approvedTasks = taskSubmissionRepository.countDistinctApprovedTasksByUserAndCourse(user, course.getId());
+        if (approvedTasks < totalTasksInCourse) {
+            throw new BusinessException("Course is not completed yet");
+        }
+
+        boolean sent = courseCertificateSender.sendCourseCompletionCertificate(user, course);
+        if (!sent) {
+            throw new BusinessException("Failed to send certificate");
+        }
+
+        progress.markCertificateSent();
+        return true;
+    }
+
     public long userPoints(String login, Long courseId) {
         AppUser user = requireUser(login);
         Course course = requireCourse(courseId);
@@ -211,12 +237,10 @@ public class LearningPlatformService {
                 .orElse(0L);
     }
 
-    @Transactional(readOnly = true)
     public Page<Course> courses(int page) {
         return courseRepository.findAll(pageRequest(page));
     }
 
-    @Transactional(readOnly = true)
     public Course courseById(Long id) {
         return requireCourse(id);
     }
@@ -250,7 +274,6 @@ public class LearningPlatformService {
         return courseBlockRepository.findPageByCourseIdWithCourse(courseId, pageRequest(page));
     }
 
-    @Transactional(readOnly = true)
     public CourseBlock blockById(Long id) {
         return requireBlock(id);
     }
@@ -286,7 +309,6 @@ public class LearningPlatformService {
         return learningTaskRepository.findPageByCourseIdWithBlock(courseId, pageRequest(page));
     }
 
-    @Transactional(readOnly = true)
     public LearningTask taskById(Long id) {
         return requireTask(id);
     }
