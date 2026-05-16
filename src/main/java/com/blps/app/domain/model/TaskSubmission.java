@@ -46,6 +46,9 @@ public class TaskSubmission {
 
     private Long awardedPoints;
 
+    @Column(name = "mentor_id")
+    private Long mentorId;
+
     @Column(nullable = false)
     private OffsetDateTime submittedAt;
 
@@ -61,6 +64,7 @@ public class TaskSubmission {
                           int attempt,
                           long calculatedPoints,
                           Long awardedPoints,
+                          Long mentorId,
                           OffsetDateTime submittedAt) {
         this.user = user;
         this.task = task;
@@ -69,6 +73,7 @@ public class TaskSubmission {
         this.attempt = attempt;
         this.calculatedPoints = calculatedPoints;
         this.awardedPoints = awardedPoints;
+        this.mentorId = mentorId;
         this.submittedAt = submittedAt;
     }
 
@@ -104,6 +109,10 @@ public class TaskSubmission {
         return awardedPoints;
     }
 
+    public Long getMentorId() {
+        return mentorId;
+    }
+
     public OffsetDateTime getSubmittedAt() {
         return submittedAt;
     }
@@ -112,15 +121,17 @@ public class TaskSubmission {
         return reviewedAt;
     }
 
-    public void approve(long awardedPoints) {
+    public void approve(long awardedPoints, Long mentorId) {
         this.status = SubmissionStatus.APPROVED;
         this.awardedPoints = awardedPoints;
+        this.mentorId = mentorId;
         this.reviewedAt = OffsetDateTime.now();
     }
 
-    public void reject() {
+    public void reject(Long mentorId) {
         this.status = SubmissionStatus.REJECTED;
         this.awardedPoints = 0L;
+        this.mentorId = mentorId;
         this.reviewedAt = OffsetDateTime.now();
     }
 }

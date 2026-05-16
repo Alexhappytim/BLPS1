@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "app_user")
 public class AppUser {
@@ -32,6 +34,9 @@ public class AppUser {
 
     @Column(name = "enabled")
     private Boolean enabled;
+
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
 
     protected AppUser() {
     }
@@ -78,6 +83,14 @@ public class AppUser {
     public void enableAndMarkEmailVerified() {
         this.emailVerified = true;
         this.enabled = true;
+    }
+
+    public OffsetDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void markLoggedInNow() {
+        this.lastLoginAt = OffsetDateTime.now();
     }
 
     public void setPasswordHash(String passwordHash) {

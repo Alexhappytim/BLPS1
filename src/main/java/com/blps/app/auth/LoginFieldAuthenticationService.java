@@ -36,6 +36,8 @@ public class LoginFieldAuthenticationService implements AuthenticationService {
             throw new BusinessException("User account is not active");
         }
 
+        user.markLoggedInNow();
+
         return AuthenticatedUser.fromEntity(user);
     }
 }

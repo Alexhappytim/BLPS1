@@ -62,7 +62,8 @@ public class TasksController {
                 request.code(),
                 request.title(),
                 request.basePoints(),
-                request.reviewType()
+                request.reviewType(),
+                request.mentorReviewReward()
         );
         return toDto(created);
     }
@@ -75,7 +76,8 @@ public class TasksController {
                 request.code(),
                 request.title(),
                 request.basePoints(),
-                request.reviewType()
+                request.reviewType(),
+                request.mentorReviewReward()
         );
         return toDto(updated);
     }
@@ -111,7 +113,8 @@ public class TasksController {
             task.getTitle(),
             task.getBlock().getId(),
             task.getBasePoints(),
-            task.getReviewType()
+            task.getReviewType(),
+            task.getMentorReviewReward()
         );
         }
 }

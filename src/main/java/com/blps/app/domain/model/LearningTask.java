@@ -33,6 +33,9 @@ public class LearningTask {
     @Column(nullable = false)
     private ReviewType reviewType;
 
+    @Column(name = "mentor_review_reward")
+    private Long mentorReviewReward;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "block_id")
     private CourseBlock block;
@@ -40,11 +43,12 @@ public class LearningTask {
     protected LearningTask() {
     }
 
-    public LearningTask(String code, String title, long basePoints, ReviewType reviewType, CourseBlock block) {
+    public LearningTask(String code, String title, long basePoints, ReviewType reviewType, Long mentorReviewReward, CourseBlock block) {
         this.code = code;
         this.title = title;
         this.basePoints = basePoints;
         this.reviewType = reviewType;
+        this.mentorReviewReward = mentorReviewReward;
         this.block = block;
     }
 
@@ -68,6 +72,10 @@ public class LearningTask {
         return reviewType;
     }
 
+    public Long getMentorReviewReward() {
+        return mentorReviewReward;
+    }
+
     public boolean isRequiresMentorReview() {
         return reviewType == ReviewType.MENTOR;
     }
@@ -76,11 +84,12 @@ public class LearningTask {
         return block;
     }
 
-    public void update(String code, String title, long basePoints, ReviewType reviewType, CourseBlock block) {
+    public void update(String code, String title, long basePoints, ReviewType reviewType, Long mentorReviewReward, CourseBlock block) {
         this.code = code;
         this.title = title;
         this.basePoints = basePoints;
         this.reviewType = reviewType;
+        this.mentorReviewReward = mentorReviewReward;
         this.block = block;
     }
 }

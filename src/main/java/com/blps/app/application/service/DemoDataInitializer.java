@@ -19,26 +19,26 @@ public class DemoDataInitializer {
                                CourseBlockRepository courseBlockRepository,
                                LearningTaskRepository learningTaskRepository) {
         return args -> {
-            Course frontendCourse = ensureCourse(courseRepository, "FRONTEND", "Frontend Developer");
-            Course backendCourse = ensureCourse(courseRepository, "BACKEND", "Backend Developer");
+            Course frontendCourse = ensureCourse(courseRepository, "FRONTEND", "Frontend Developer", 19900);
+            Course backendCourse = ensureCourse(courseRepository, "BACKEND", "Backend Developer", 24900);
 
             CourseBlock feBlock1 = ensureBlock(courseBlockRepository, "FE-BLK-1", "HTML/CSS", 0, 1, frontendCourse);
             CourseBlock feBlock2 = ensureBlock(courseBlockRepository, "FE-BLK-2", "JavaScript", 120, 2, frontendCourse);
             CourseBlock beBlock1 = ensureBlock(courseBlockRepository, "BE-BLK-1", "Java Core", 0, 1, backendCourse);
             CourseBlock beBlock2 = ensureBlock(courseBlockRepository, "BE-BLK-2", "Spring", 130, 2, backendCourse);
 
-            ensureTask(learningTaskRepository, "FE-T-1", "Тест по теории", 50, ReviewType.AUTO, feBlock1);
-            ensureTask(learningTaskRepository, "FE-T-2", "Проект с проверкой", 120, ReviewType.MENTOR, feBlock1);
-            ensureTask(learningTaskRepository, "FE-T-3", "SPA модуль", 180, ReviewType.MENTOR, feBlock2);
+            ensureTask(learningTaskRepository, "FE-T-1", "Тест по теории", 50, ReviewType.AUTO, null, feBlock1);
+            ensureTask(learningTaskRepository, "FE-T-2", "Проект с проверкой", 120, ReviewType.MENTOR, 500L, feBlock1);
+            ensureTask(learningTaskRepository, "FE-T-3", "SPA модуль", 180, ReviewType.MENTOR, 700L, feBlock2);
 
-            ensureTask(learningTaskRepository, "BE-T-1", "Java quiz", 60, ReviewType.AUTO, beBlock1);
-            ensureTask(learningTaskRepository, "BE-T-2", "REST сервис", 140, ReviewType.MENTOR, beBlock2);
+            ensureTask(learningTaskRepository, "BE-T-1", "Java quiz", 60, ReviewType.AUTO, null, beBlock1);
+            ensureTask(learningTaskRepository, "BE-T-2", "REST сервис", 140, ReviewType.MENTOR, 800L, beBlock2);
         };
     }
 
-    private Course ensureCourse(CourseRepository courseRepository, String code, String title) {
+    private Course ensureCourse(CourseRepository courseRepository, String code, String title, long price) {
         return courseRepository.findByCode(code)
-                .orElseGet(() -> courseRepository.save(new Course(code, title)));
+                .orElseGet(() -> courseRepository.save(new Course(code, title, price)));
     }
 
     private CourseBlock ensureBlock(CourseBlockRepository courseBlockRepository,
@@ -55,11 +55,12 @@ public class DemoDataInitializer {
                                     String code,
                                     String title,
                                     long basePoints,
-                        ReviewType reviewType,
+                                    ReviewType reviewType,
+                                    Long mentorReviewReward,
                                     CourseBlock block) {
         return learningTaskRepository.findByCode(code)
                 .orElseGet(() -> learningTaskRepository.save(
-                new LearningTask(code, title, basePoints, reviewType, block)
+                new LearningTask(code, title, basePoints, reviewType, mentorReviewReward, block)
                 ));
     }
 }

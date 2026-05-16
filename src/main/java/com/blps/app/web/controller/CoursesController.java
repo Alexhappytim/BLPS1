@@ -54,13 +54,13 @@ public class CoursesController {
 
     @PostMapping
     public CourseDto createCourse(@Valid @RequestBody CourseUpsertRequest request) {
-        Course created = learningPlatformService.createCourse(request.code(), request.title());
+        Course created = learningPlatformService.createCourse(request.code(), request.title(), request.price());
         return toDto(created);
     }
 
     @PutMapping("/{id}")
     public CourseDto updateCourse(@PathVariable @Positive Long id, @Valid @RequestBody CourseUpsertRequest request) {
-        Course updated = learningPlatformService.updateCourse(id, request.code(), request.title());
+        Course updated = learningPlatformService.updateCourse(id, request.code(), request.title(), request.price());
         return toDto(updated);
     }
 
@@ -78,6 +78,6 @@ public class CoursesController {
     }
 
     private CourseDto toDto(Course course) {
-        return new CourseDto(course.getId(), course.getCode(), course.getTitle());
+        return new CourseDto(course.getId(), course.getCode(), course.getTitle(), course.getPrice());
     }
 }

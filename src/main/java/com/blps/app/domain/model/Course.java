@@ -21,12 +21,16 @@ public class Course {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false)
+    private long price;
+
     protected Course() {
     }
 
-    public Course(String code, String title) {
+    public Course(String code, String title, long price) {
         this.code = code;
         this.title = title;
+        this.price = price;
     }
 
     public Long getId() {
@@ -41,8 +45,13 @@ public class Course {
         return title;
     }
 
-    public void update(String code, String title) {
+    public long getPrice() {
+        return price;
+    }
+
+    public void update(String code, String title, long price) {
         this.code = code;
         this.title = title;
+        this.price = price;
     }
 }

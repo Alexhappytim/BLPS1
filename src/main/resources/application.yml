@@ -11,17 +11,8 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/blps}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -46,12 +37,16 @@ server:
 app:
   mail:
     enabled: ${MAIL_ENABLED:true}
-    from: ${MAIL_FROM:${MAIL_USERNAME:}}
+    from: ${MAIL_FROM:}
   auth:
     verification-token-ttl-hours: ${AUTH_VERIFICATION_TTL_HOURS:24}
     bootstrap-admin:
       email: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@blps.local}
       password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+  kafka:
+    mail-topic: ${KAFKA_MAIL_TOPIC:mail.send}
+  scheduling:
+    inactivity-reminder-cron: ${INACTIVITY_REMINDER_CRON:0 0 3 * * *}
 
 springdoc:
   api-docs:

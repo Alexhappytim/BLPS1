@@ -113,6 +113,47 @@
       ]
     },
     {
+      "name": "Mail",
+      "item": [
+        {
+          "name": "POST /api/mail/test",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"{{testEmailTo}}\",\n  \"subject\": \"{{testEmailSubject}}\",\n  \"body\": \"{{testEmailBody}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mail/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mail", "test"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('Response has messageId', function () { pm.expect(data.messageId).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "E2E Main Business Process",
       "item": [
         {
@@ -760,6 +801,50 @@
       ]
     },
     {
+      "name": "Users",
+      "item": [
+        {
+          "name": "GET /api/users",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/users?role=MENTOR",
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
+                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?role=MENTOR",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [{ "key": "role", "value": "MENTOR" }]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Courses",
       "item": [
         {
@@ -814,7 +899,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"{{newCourseCode}}\",\n  \"title\": \"{{newCourseTitle}}\"\n}"
+              "raw": "{\n  \"code\": \"{{newCourseCode}}\",\n  \"title\": \"{{newCourseTitle}}\",\n  \"price\": {{newCoursePrice}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses",
@@ -849,7 +934,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"{{updatedCourseCode}}\",\n  \"title\": \"{{updatedCourseTitle}}\"\n}"
+              "raw": "{\n  \"code\": \"{{updatedCourseCode}}\",\n  \"title\": \"{{updatedCourseTitle}}\",\n  \"price\": {{updatedCoursePrice}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
@@ -1119,7 +1204,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{newTaskCode}}\",\n  \"title\": \"{{newTaskTitle}}\",\n  \"basePoints\": {{newTaskBasePoints}},\n  \"reviewType\": \"{{newTaskReviewType}}\"\n}"
+              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{newTaskCode}}\",\n  \"title\": \"{{newTaskTitle}}\",\n  \"basePoints\": {{newTaskBasePoints}},\n  \"reviewType\": \"{{newTaskReviewType}}\",\n  \"mentorReviewReward\": {{newTaskMentorReviewReward}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks",
@@ -1154,7 +1239,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{updatedTaskCode}}\",\n  \"title\": \"{{updatedTaskTitle}}\",\n  \"basePoints\": {{updatedTaskBasePoints}},\n  \"reviewType\": \"{{updatedTaskReviewType}}\"\n}"
+              "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{updatedTaskCode}}\",\n  \"title\": \"{{updatedTaskTitle}}\",\n  \"basePoints\": {{updatedTaskBasePoints}},\n  \"reviewType\": \"{{updatedTaskReviewType}}\",\n  \"mentorReviewReward\": {{updatedTaskMentorReviewReward}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/{{createdTaskId}}",

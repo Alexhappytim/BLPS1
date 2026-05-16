@@ -108,6 +108,7 @@ public class LearningPlatformService {
                     attempt,
                     calculatedPoints,
                     calculatedPoints,
+                null,
                     OffsetDateTime.now()
             );
             TaskSubmission saved = taskSubmissionRepository.save(submission);
@@ -129,6 +130,7 @@ public class LearningPlatformService {
                 attempt,
                 calculatedPoints,
                 null,
+            null,
                 OffsetDateTime.now()
         );
         TaskSubmission saved = taskSubmissionRepository.save(pending);
@@ -137,7 +139,7 @@ public class LearningPlatformService {
 
     @Transactional
     public SubmissionResult reviewSubmission(String login, Long courseId, Long submissionId, boolean approved) {
-        requireUser(login);
+        AppUser reviewer = requireUser(login);
         Course course = requireCourse(courseId);
         TaskSubmission submission = taskSubmissionRepository.findById(submissionId)
                 .orElseThrow(() -> new BusinessException("Submission not found: " + submissionId));
@@ -164,10 +166,10 @@ public class LearningPlatformService {
                     .orElse(0L);
             long delta = submission.getCalculatedPoints() - previousAwarded;
             progress.addPoints(delta);
-            submission.approve(submission.getCalculatedPoints());
+            submission.approve(submission.getCalculatedPoints(), reviewer.getId());
             trySendCourseCertificate(user, course, progress);
         } else {
-            submission.reject();
+            submission.reject(reviewer.getId());
         }
 
         return new SubmissionResult(
@@ -246,16 +248,16 @@ public class LearningPlatformService {
     }
 
     @Transactional
-    public Course createCourse(String code, String title) {
+    public Course createCourse(String code, String title, long price) {
         ensureCourseCodeUnique(code, null);
-        return courseRepository.save(new Course(code, title));
+        return courseRepository.save(new Course(code, title, price));
     }
 
     @Transactional
-    public Course updateCourse(Long id, String code, String title) {
+    public Course updateCourse(Long id, String code, String title, long price) {
         Course course = requireCourse(id);
         ensureCourseCodeUnique(code, id);
-        course.update(code, title);
+        course.update(code, title, price);
         return course;
     }
 
@@ -314,19 +316,38 @@ public class LearningPlatformService {
     }
 
     @Transactional
-    public LearningTask createTask(Long blockId, String code, String title, long basePoints, ReviewType reviewType) {
+    public LearningTask createTask(Long blockId, String code, String title, long basePoints, ReviewType reviewType, Long mentorReviewReward) {
         CourseBlock block = requireBlock(blockId);
         ensureTaskCodeUnique(code, null);
-        return learningTaskRepository.save(new LearningTask(code, title, basePoints, reviewType, block));
+        Long normalizedReward = normalizeMentorReviewReward(reviewType, mentorReviewReward);
+        return learningTaskRepository.save(new LearningTask(code, title, basePoints, reviewType, normalizedReward, block));
     }
 
     @Transactional
-    public LearningTask updateTask(Long id, Long blockId, String code, String title, long basePoints, ReviewType reviewType) {
+    public LearningTask updateTask(Long id, Long blockId, String code, String title, long basePoints, ReviewType reviewType, Long mentorReviewReward) {
         LearningTask task = requireTask(id);
         CourseBlock block = requireBlock(blockId);
         ensureTaskCodeUnique(code, id);
-        task.update(code, title, basePoints, reviewType, block);
+        Long normalizedReward = normalizeMentorReviewReward(reviewType, mentorReviewReward);
+        task.update(code, title, basePoints, reviewType, normalizedReward, block);
         return task;
+    }
+
+    private Long normalizeMentorReviewReward(ReviewType reviewType, Long mentorReviewReward) {
+        if (reviewType == ReviewType.MENTOR) {
+            if (mentorReviewReward == null) {
+                throw new BusinessException("mentorReviewReward is required for mentor review tasks");
+            }
+            if (mentorReviewReward < 0) {
+                throw new BusinessException("mentorReviewReward must be >= 0");
+            }
+            return mentorReviewReward;
+        }
+
+        if (mentorReviewReward != null && mentorReviewReward != 0) {
+            throw new BusinessException("mentorReviewReward is only allowed for mentor review tasks");
+        }
+        return null;
     }
 
     @Transactional

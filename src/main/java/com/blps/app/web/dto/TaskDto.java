@@ -9,6 +9,7 @@ public record TaskDto(
         String title,
         Long blockId,
         long basePoints,
-        ReviewType reviewType
+        ReviewType reviewType,
+        Long mentorReviewReward
 ) {
 }
