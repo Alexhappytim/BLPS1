@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/blps}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:telegram-bot-service}
+      auto-offset-reset: earliest
+
+app:
+  kafka:
+    mail-topic: ${KAFKA_MAIL_TOPIC:mail.send}
+    auth-register-topic: ${KAFKA_AUTH_REGISTER_TOPIC:auth.register.telegram}
+    auth-register-result-topic: ${KAFKA_AUTH_REGISTER_RESULT_TOPIC:auth.register.telegram.result}
+  telegram:
+    bot-username: ${TELEGRAM_BOT_USERNAME:}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}

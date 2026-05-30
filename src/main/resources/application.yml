@@ -35,6 +35,8 @@ server:
     certificate-private-key: classpath:key.pem
 
 app:
+  crm:
+    base-url: ${CRM_BASE_URL:http://localhost:1313/BLPS/hs/skillbox}
   mail:
     enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:}
@@ -45,6 +47,8 @@ app:
       password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:admin12345}
   kafka:
     mail-topic: ${KAFKA_MAIL_TOPIC:mail.send}
+    auth-register-topic: ${KAFKA_AUTH_REGISTER_TOPIC:auth.register.telegram}
+    auth-register-result-topic: ${KAFKA_AUTH_REGISTER_RESULT_TOPIC:auth.register.telegram.result}
   scheduling:
     inactivity-reminder-cron: ${INACTIVITY_REMINDER_CRON:0 0 3 * * *}
 

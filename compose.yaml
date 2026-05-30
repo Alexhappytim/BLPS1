@@ -57,6 +57,8 @@ services:
       MAIL_ENABLED: ${MAIL_ENABLED:-true}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_MAIL_TOPIC: ${KAFKA_MAIL_TOPIC:-mail.send}
+      KAFKA_AUTH_REGISTER_TOPIC: ${KAFKA_AUTH_REGISTER_TOPIC:-auth.register.telegram}
+      KAFKA_AUTH_REGISTER_RESULT_TOPIC: ${KAFKA_AUTH_REGISTER_RESULT_TOPIC:-auth.register.telegram.result}
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -79,6 +81,29 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_MAIL_TOPIC: ${KAFKA_MAIL_TOPIC:-mail.send}
       KAFKA_CONSUMER_GROUP_ID: email-service
+    restart: unless-stopped
+
+  telegram-bot-service:
+    build:
+      context: .
+      dockerfile: TelegramBotService/Dockerfile
+    container_name: blps-telegram-bot-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/blps
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_MAIL_TOPIC: ${KAFKA_MAIL_TOPIC:-mail.send}
+      KAFKA_AUTH_REGISTER_TOPIC: ${KAFKA_AUTH_REGISTER_TOPIC:-auth.register.telegram}
+      KAFKA_AUTH_REGISTER_RESULT_TOPIC: ${KAFKA_AUTH_REGISTER_RESULT_TOPIC:-auth.register.telegram.result}
+      KAFKA_CONSUMER_GROUP_ID: telegram-bot-service
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     restart: unless-stopped
 
 volumes:
