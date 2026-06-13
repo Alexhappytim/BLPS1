@@ -33,10 +33,15 @@ public class MailDispatchService {
 
     @Transactional
     public boolean dispatch(EmailCommandType type, String to, String subject, String body) {
+        return dispatch(type, to, subject, body, null);
+    }
+
+    public boolean dispatch(EmailCommandType type, String to, String subject, String body, String imageUrl) {
         if (!mailEnabled) {
             return false;
         }
-        EmailCommand command = EmailCommand.of(type, to, subject, body);
+
+        EmailCommand command = EmailCommand.of(type, to, subject, body, imageUrl);
         afterCommitExecutor.run(() -> kafkaMailPublisher.publish(command));
         emailDispatchLogRepository.save(new EmailDispatchLog(type, to, OffsetDateTime.now()));
         return true;

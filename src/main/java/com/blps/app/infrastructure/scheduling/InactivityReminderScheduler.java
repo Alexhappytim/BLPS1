@@ -29,39 +29,70 @@ public class InactivityReminderScheduler {
         this.zoneId = ZoneId.systemDefault();
     }
 
-    @Scheduled(cron = "${app.scheduling.inactivity-reminder-cron:0 0 3 * * *}")
+    @Scheduled(cron = "${app.scheduling.inactivity-reminder-cron:0 * * * * *}")
     public void sendMonthlyInactivityReminders() {
         if (!mailDispatchService.isMailEnabled()) {
             return;
         }
 
-        LocalDate targetDate = LocalDate.now(zoneId).minusMonths(1);
-        OffsetDateTime start = targetDate.atStartOfDay(zoneId).toOffsetDateTime();
-        OffsetDateTime end = targetDate.plusDays(1).atStartOfDay(zoneId).toOffsetDateTime();
-
-        var users = appUserRepository.findByEnabledTrueAndEmailVerifiedTrueAndLastLoginAtGreaterThanEqualAndLastLoginAtLessThan(start, end);
+        var users = appUserRepository.findByEnabledTrueAndEmailVerifiedTrueAndInactivityReminderCountLessThan(3);
         if (users.isEmpty()) {
             return;
         }
 
+        OffsetDateTime now = OffsetDateTime.now(zoneId);
         int dispatched = 0;
+
         for (AppUser user : users) {
             String to = user.getLogin();
             if (to == null || !to.contains("@")) {
                 continue;
             }
 
+            OffsetDateTime lastActivity = user.getLastLoginAt() != null ? user.getLastLoginAt() : OffsetDateTime.MIN;
+            if (lastActivity.plusDays(3).isAfter(now)) {
+                continue; // User was active less than 3 days ago
+            }
+
+            OffsetDateTime lastReminder = user.getLastInactivityReminderAt();
+            if (lastReminder != null && lastReminder.plusDays(3).isAfter(now)) {
+                continue; // We already sent a reminder less than 3 days ago
+            }
+
+            int count = user.getInactivityReminderCount();
+            String subject = "We miss you on BLPS";
+            String body = "";
+            String imageUrl = null;
+
+            if (count == 0) {
+                body = "Hello! We noticed you haven't logged in for a few days. Come back and continue learning: https://blps.local";
+                imageUrl = "sad_cat_step1.png";
+            } else if (count == 1) {
+                body = "It's been a while... We are really sad without you. Please come back: https://blps.local";
+                imageUrl = "sad_cat_step2.png";
+            } else if (count == 2) {
+                subject = "Final reminder...";
+                body = "We are crying in the rain. This is our last reminder. We hope to see you again soon: https://blps.local";
+                imageUrl = "sad_cat_step3.png";
+            }
+
             boolean ok = mailDispatchService.dispatch(
                     EmailCommandType.INACTIVITY_REMINDER,
                     to,
-                    "We miss you on BLPS",
-                    "Hello! We noticed you haven't logged in for a month. Come back and continue learning: https://blps.local"
+                    subject,
+                    body,
+                    imageUrl
             );
+            
             if (ok) {
+                user.incrementInactivityReminderCount();
+                appUserRepository.save(user);
                 dispatched++;
             }
         }
 
-        log.info("Dispatched inactivity reminders: {} (targetDate={})", dispatched, targetDate);
+        if (dispatched > 0) {
+            log.info("Dispatched {} progressive inactivity reminders", dispatched);
+        }
     }
 }

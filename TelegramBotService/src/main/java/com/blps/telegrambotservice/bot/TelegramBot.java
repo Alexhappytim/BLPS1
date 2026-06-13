@@ -96,4 +96,22 @@ public class TelegramBot extends TelegramLongPollingBot {
             // no-op
         }
     }
+
+    public void sendPhoto(Long chatId, String text, String imageClasspath) {
+        try {
+            var stream = getClass().getResourceAsStream("/images/" + imageClasspath);
+            if (stream == null) {
+                sendText(chatId, text);
+                return;
+            }
+            org.telegram.telegrambots.meta.api.objects.InputFile photo = new org.telegram.telegrambots.meta.api.objects.InputFile(stream, imageClasspath);
+            execute(org.telegram.telegrambots.meta.api.methods.send.SendPhoto.builder()
+                    .chatId(chatId.toString())
+                    .caption(text)
+                    .photo(photo)
+                    .build());
+        } catch (TelegramApiException ignored) {
+            // no-op
+        }
+    }
 }

@@ -38,6 +38,12 @@ public class AppUser {
     @Column(name = "last_login_at")
     private OffsetDateTime lastLoginAt;
 
+    @Column(name = "inactivity_reminder_count")
+    private int inactivityReminderCount = 0;
+
+    @Column(name = "last_inactivity_reminder_at")
+    private OffsetDateTime lastInactivityReminderAt;
+
     protected AppUser() {
     }
 
@@ -91,6 +97,21 @@ public class AppUser {
 
     public void markLoggedInNow() {
         this.lastLoginAt = OffsetDateTime.now();
+        this.inactivityReminderCount = 0;
+        this.lastInactivityReminderAt = null;
+    }
+
+    public int getInactivityReminderCount() {
+        return inactivityReminderCount;
+    }
+
+    public void incrementInactivityReminderCount() {
+        this.inactivityReminderCount++;
+        this.lastInactivityReminderAt = OffsetDateTime.now();
+    }
+
+    public OffsetDateTime getLastInactivityReminderAt() {
+        return lastInactivityReminderAt;
     }
 
     public void setPasswordHash(String passwordHash) {

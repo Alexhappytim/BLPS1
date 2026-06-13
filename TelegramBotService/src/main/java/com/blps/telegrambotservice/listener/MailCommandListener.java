@@ -31,14 +31,21 @@ public class MailCommandListener {
     )
     public void onMessage(String payload) throws Exception {
         EmailCommand command = objectMapper.readValue(payload, EmailCommand.class);
-        if (command.type() != EmailCommandType.COURSE_CERTIFICATE) {
-            return;
+        if (command.type() == EmailCommandType.COURSE_CERTIFICATE) {
+            telegramUserLinkRepository.findByEmail(command.to())
+                    .ifPresent(link -> telegramBot.sendText(
+                            link.getChatId(),
+                            "Поздравляем! Вы успешно завершили курс. Сертификат отправлен на почту: " + command.to()
+                    ));
+        } else if (command.type() == EmailCommandType.INACTIVITY_REMINDER) {
+            telegramUserLinkRepository.findByEmail(command.to())
+                    .ifPresent(link -> {
+                        if (command.imageUrl() != null) {
+                            telegramBot.sendPhoto(link.getChatId(), command.body(), command.imageUrl());
+                        } else {
+                            telegramBot.sendText(link.getChatId(), command.body());
+                        }
+                    });
         }
-
-        telegramUserLinkRepository.findByEmail(command.to())
-                .ifPresent(link -> telegramBot.sendText(
-                        link.getChatId(),
-                        "Поздравляем! Вы успешно завершили курс. Сертификат отправлен на почту: " + command.to()
-                ));
     }
 }

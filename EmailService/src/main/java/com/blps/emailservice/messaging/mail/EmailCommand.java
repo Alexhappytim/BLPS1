@@ -9,6 +9,7 @@ public record EmailCommand(
         String to,
         String subject,
         String body,
+        String imageUrl,
         OffsetDateTime createdAt
 ) {
 }

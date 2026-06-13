@@ -20,4 +20,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
             OffsetDateTime startInclusive,
             OffsetDateTime endExclusive
     );
+
+    List<AppUser> findByEnabledTrueAndEmailVerifiedTrueAndInactivityReminderCountLessThan(int maxCount);
 }
