@@ -18,7 +18,16 @@ import com.blps.app.domain.repository.LearningTaskRepository;
 import com.blps.app.domain.repository.TaskSubmissionRepository;
 import com.blps.app.domain.repository.UserCourseProgressRepository;
 import com.blps.app.domain.repository.UserBlockAccessRepository;
+import com.blps.app.domain.model.CoursePurchase;
+import com.blps.app.domain.model.CoursePurchaseStatus;
+import com.blps.app.domain.repository.CoursePurchaseRepository;
+import com.blps.app.infrastructure.crm.CrmClient;
+import com.blps.app.infrastructure.crm.dto.CrmCourseInvoiceRequest;
+import com.blps.app.infrastructure.crm.dto.CrmCourseInvoiceDto;
+import com.blps.app.infrastructure.crm.dto.CrmMentorPayrollRequest;
 import com.blps.app.infrastructure.notification.CourseCertificateSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +39,8 @@ import java.time.OffsetDateTime;
 @Service
 public class LearningPlatformService {
 
+    private static final Logger log = LoggerFactory.getLogger(LearningPlatformService.class);
+
     private static final int PAGE_SIZE = 10;
 
     private final AppUserRepository appUserRepository;
@@ -40,6 +51,8 @@ public class LearningPlatformService {
     private final UserCourseProgressRepository userCourseProgressRepository;
     private final UserBlockAccessRepository userBlockAccessRepository;
     private final CourseCertificateSender courseCertificateSender;
+    private final CoursePurchaseRepository coursePurchaseRepository;
+    private final CrmClient crmClient;
 
     public LearningPlatformService(AppUserRepository appUserRepository,
                                    CourseRepository courseRepository,
@@ -48,7 +61,9 @@ public class LearningPlatformService {
                                    TaskSubmissionRepository taskSubmissionRepository,
                                    UserCourseProgressRepository userCourseProgressRepository,
                                    UserBlockAccessRepository userBlockAccessRepository,
-                                   CourseCertificateSender courseCertificateSender) {
+                                   CourseCertificateSender courseCertificateSender,
+                                   CoursePurchaseRepository coursePurchaseRepository,
+                                   CrmClient crmClient) {
         this.appUserRepository = appUserRepository;
         this.courseRepository = courseRepository;
         this.courseBlockRepository = courseBlockRepository;
@@ -57,6 +72,8 @@ public class LearningPlatformService {
         this.userCourseProgressRepository = userCourseProgressRepository;
         this.userBlockAccessRepository = userBlockAccessRepository;
         this.courseCertificateSender = courseCertificateSender;
+        this.coursePurchaseRepository = coursePurchaseRepository;
+        this.crmClient = crmClient;
     }
 
     public double resolveCoefficient(Difficulty difficulty) {
@@ -75,6 +92,10 @@ public class LearningPlatformService {
         ReviewType reviewType = task.getReviewType();
 
         ensureTaskBelongsToCourse(task, courseId);
+
+        if (!coursePurchaseRepository.existsByUserAndCourseAndStatus(user, course, CoursePurchaseStatus.PAID)) {
+            throw new BusinessException("Course not purchased or payment not completed");
+        }
 
         if (!userBlockAccessRepository.existsByUserAndBlock(user, task.getBlock())) {
             throw new BusinessException("Block is not opened. Please open the block first");
@@ -168,6 +189,18 @@ public class LearningPlatformService {
             progress.addPoints(delta);
             submission.approve(submission.getCalculatedPoints(), reviewer.getId());
             trySendCourseCertificate(user, course, progress);
+            
+            if (task.getMentorReviewReward() != null && task.getMentorReviewReward() > 0) {
+                try {
+                    crmClient.createMentorPayroll(new CrmMentorPayrollRequest(
+                            reviewer.getLogin(),
+                            task.getMentorReviewReward(),
+                            "Review of task " + task.getCode()
+                    ));
+                } catch (Exception e) {
+                    log.warn("Failed to send mentor payroll to CRM for task: {}", task.getCode(), e);
+                }
+            }
         } else {
             submission.reject(reviewer.getId());
         }
@@ -188,6 +221,11 @@ public class LearningPlatformService {
         CourseBlock block = requireBlock(blockId);
 
         ensureBlockBelongsToCourse(block, courseId);
+
+        if (!coursePurchaseRepository.existsByUserAndCourseAndStatus(user, course, CoursePurchaseStatus.PAID)) {
+            throw new BusinessException("Course not purchased or payment not completed");
+        }
+
         UserCourseProgress progress = getOrCreateProgress(user, course);
 
         if (userBlockAccessRepository.existsByUserAndBlock(user, block)) {
@@ -237,6 +275,50 @@ public class LearningPlatformService {
         return userCourseProgressRepository.findByUserAndCourse(user, course)
                 .map(UserCourseProgress::getPoints)
                 .orElse(0L);
+    }
+
+    @Transactional
+    public PaymentInfo buyCourse(String login, Long courseId) {
+        AppUser user = requireUser(login);
+        Course course = requireCourse(courseId);
+
+        if (coursePurchaseRepository.existsByUserAndCourseAndStatus(user, course, CoursePurchaseStatus.PAID)) {
+            throw new BusinessException("Course already purchased");
+        }
+
+        CoursePurchase purchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
+        if (purchase != null && purchase.getStatus() == CoursePurchaseStatus.PENDING_PAYMENT) {
+            throw new BusinessException("Course purchase already pending");
+        }
+
+        CrmCourseInvoiceDto invoice;
+        try {
+            invoice = crmClient.createCourseInvoice(new CrmCourseInvoiceRequest(login, course.getCode(), course.getPrice()));
+        } catch (Exception e) {
+            throw new BusinessException("Failed to create invoice in CRM: " + e.getMessage());
+        }
+
+        CoursePurchase newPurchase = new CoursePurchase(user, course, invoice.invoiceId(), course.getPrice());
+        coursePurchaseRepository.save(newPurchase);
+
+        return new PaymentInfo(invoice.invoiceId(), invoice.paymentUrl());
+    }
+
+    @Transactional
+    public void handlePaymentCallback(String invoiceId, boolean success) {
+        CoursePurchase purchase = coursePurchaseRepository.findByCrmInvoiceId(invoiceId)
+                .orElseThrow(() -> new BusinessException("Purchase not found for invoice: " + invoiceId));
+
+        if (purchase.getStatus() != CoursePurchaseStatus.PENDING_PAYMENT) {
+            return;
+        }
+
+        if (success) {
+            purchase.markPaid();
+            getOrCreateProgress(purchase.getUser(), purchase.getCourse());
+        } else {
+            purchase.markFailed();
+        }
     }
 
     public Page<Course> courses(int page) {

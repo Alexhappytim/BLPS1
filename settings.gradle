@@ -2,3 +2,4 @@ rootProject.name = 'blps-backend'
 
 include 'EmailService'
 include 'TelegramBotService'
+include 'CrmMockService'

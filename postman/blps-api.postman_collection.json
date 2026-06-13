@@ -8,8 +8,16 @@
   "auth": {
     "type": "basic",
     "basic": [
-      { "key": "username", "value": "{{basicUsername}}", "type": "string" },
-      { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+      {
+        "key": "username",
+        "value": "{{basicUsername}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{basicPassword}}",
+        "type": "string"
+      }
     ]
   },
   "item": [
@@ -19,17 +27,30 @@
         {
           "name": "POST /api/auth/register",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{newUserEmail}}\",\n  \"password\": \"{{newUserPassword}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             }
           },
           "event": [
@@ -49,17 +70,30 @@
         {
           "name": "POST /api/auth/confirm-email",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{verificationToken}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/confirm-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "confirm-email"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "confirm-email"
+              ]
             }
           }
         },
@@ -69,20 +103,40 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{mentorEmail}}\",\n  \"password\": \"{{mentorPassword}}\",\n  \"role\": \"MENTOR\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/admin/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "admin", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "admin",
+                "register"
+              ]
             }
           }
         },
@@ -93,8 +147,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             }
           }
         },
@@ -105,8 +165,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         }
@@ -121,20 +187,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"to\": \"{{testEmailTo}}\",\n  \"subject\": \"{{testEmailSubject}}\",\n  \"body\": \"{{testEmailBody}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/mail/test",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "mail", "test"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mail",
+                "test"
+              ]
             }
           },
           "event": [
@@ -183,17 +268,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{e2eUserEmail}}\",\n  \"password\": \"{{e2eUserPassword}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             }
           }
         },
@@ -211,17 +309,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"{{e2eVerificationToken}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/confirm-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "confirm-email"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "confirm-email"
+              ]
             }
           }
         },
@@ -246,17 +357,103 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/courses?page=0",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses"],
-              "query": [{ "key": "page", "value": "0" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.5 Buy Course",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var payload = pm.response.json();",
+                  "pm.test('Payment URL returned', function () { pm.expect(payload.paymentUrl).to.exist; });",
+                  "// Wait a bit to let CRM mock callback fire asynchronously",
+                  "setTimeout(function(){}, 3000);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{e2eCourseId}}/buy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{e2eCourseId}}",
+                "buy"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03.6 Wait for Payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://postman-echo.com/delay/3",
+              "protocol": "https",
+              "host": [
+                "postman-echo",
+                "com"
+              ],
+              "path": [
+                "delay",
+                "3"
+              ]
             }
           }
         },
@@ -281,19 +478,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blocks?courseId={{e2eCourseId}}&page=0",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks"
+              ],
               "query": [
-                { "key": "courseId", "value": "{{e2eCourseId}}" },
-                { "key": "page", "value": "0" }
+                {
+                  "key": "courseId",
+                  "value": "{{e2eCourseId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                }
               ]
             }
           }
@@ -315,20 +531,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"blockId\": {{e2eBlockId}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blocks/open",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "open"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "open"
+              ]
             }
           }
         },
@@ -357,19 +592,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/tasks?courseId={{e2eCourseId}}&page=0",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ],
               "query": [
-                { "key": "courseId", "value": "{{e2eCourseId}}" },
-                { "key": "page", "value": "0" }
+                {
+                  "key": "courseId",
+                  "value": "{{e2eCourseId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                }
               ]
             }
           }
@@ -391,20 +645,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"taskId\": {{e2eAutoTaskId}},\n  \"difficulty\": \"MEDIUM\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "submit"
+              ]
             }
           }
         },
@@ -428,20 +701,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"taskId\": {{e2eMentorTaskId}},\n  \"difficulty\": \"HARD\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "submit"
+              ]
             }
           }
         },
@@ -462,20 +754,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{mentorEmail}}", "type": "string" },
-                { "key": "password", "value": "{{mentorPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{mentorEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{mentorPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{mentorEmail}}\",\n  \"courseId\": {{e2eCourseId}},\n  \"submissionId\": {{e2eSubmissionId}},\n  \"approved\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/submissions/review",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "submissions", "review"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissions",
+                "review"
+              ]
             }
           }
         },
@@ -498,20 +809,41 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{e2eUserEmail}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{e2eCourseId}}/certificate/send",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses", "{{e2eCourseId}}", "certificate", "send"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{e2eCourseId}}",
+                "certificate",
+                "send"
+              ]
             }
           }
         },
@@ -534,20 +866,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{e2eUserEmail}}", "type": "string" },
-                { "key": "password", "value": "{{e2eUserPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{e2eUserEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{e2eUserPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{e2eUserEmail}}\",\n  \"courseId\": {{e2eCourseId}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/users/points",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "points"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "points"
+              ]
             }
           }
         }
@@ -570,13 +921,21 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         },
@@ -597,16 +956,30 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "wrong-password", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "wrong-password",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
           }
         },
@@ -627,20 +1000,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
-                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{basicUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{basicPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"FORBIDDEN-COURSE\",\n  \"title\": \"Should be forbidden\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses"
+              ]
             }
           }
         },
@@ -661,20 +1052,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
-                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{basicUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{basicPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": 1,\n  \"submissionId\": 1,\n  \"approved\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/submissions/review",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "submissions", "review"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissions",
+                "review"
+              ]
             }
           }
         },
@@ -692,17 +1102,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"12345678\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             }
           }
         },
@@ -723,20 +1146,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
-                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{basicUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{basicPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"bad-email-format\",\n  \"courseId\": -1,\n  \"taskId\": 0,\n  \"difficulty\": \"IMPOSSIBLE\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "submit"
+              ]
             }
           }
         },
@@ -754,17 +1196,30 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"invalid-token\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/confirm-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "confirm-email"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "confirm-email"
+              ]
             }
           }
         },
@@ -785,16 +1240,29 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/not-existing-endpoint",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "not-existing-endpoint"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "not-existing-endpoint"
+              ]
             }
           }
         }
@@ -809,16 +1277,29 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
             }
           }
         },
@@ -828,17 +1309,35 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/users?role=MENTOR",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"],
-              "query": [{ "key": "role", "value": "MENTOR" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "MENTOR"
+                }
+              ]
             }
           }
         }
@@ -854,9 +1353,19 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/courses?page={{page}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses"],
-              "query": [{ "key": "page", "value": "{{page}}" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                }
+              ]
             }
           },
           "event": [
@@ -880,8 +1389,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{courseId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses", "{{courseId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{courseId}}"
+              ]
             }
           }
         },
@@ -891,20 +1406,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"{{newCourseCode}}\",\n  \"title\": \"{{newCourseTitle}}\",\n  \"price\": {{newCoursePrice}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses"
+              ]
             }
           },
           "event": [
@@ -926,20 +1459,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"{{updatedCourseCode}}\",\n  \"title\": \"{{updatedCourseTitle}}\",\n  \"price\": {{updatedCoursePrice}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses", "{{createdCourseId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{createdCourseId}}"
+              ]
             }
           }
         },
@@ -949,16 +1501,30 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{createdCourseId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses", "{{createdCourseId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{createdCourseId}}"
+              ]
             }
           }
         },
@@ -968,20 +1534,41 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{basicUsername}}", "type": "string" },
-                { "key": "password", "value": "{{basicPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{basicUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{basicPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/courses/{{courseId}}/certificate/send",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "courses", "{{courseId}}", "certificate", "send"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "courses",
+                "{{courseId}}",
+                "certificate",
+                "send"
+              ]
             }
           }
         }
@@ -997,11 +1584,22 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blocks?courseId={{courseId}}&page={{page}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks"
+              ],
               "query": [
-                { "key": "courseId", "value": "{{courseId}}" },
-                { "key": "page", "value": "{{page}}" }
+                {
+                  "key": "courseId",
+                  "value": "{{courseId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                }
               ]
             }
           },
@@ -1026,8 +1624,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blocks/{{blockId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "{{blockId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "{{blockId}}"
+              ]
             }
           }
         },
@@ -1037,20 +1641,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"courseId\": {{courseId}},\n  \"code\": \"{{newBlockCode}}\",\n  \"title\": \"{{newBlockTitle}}\",\n  \"openCost\": {{newBlockOpenCost}},\n  \"orderIndex\": {{newBlockOrderIndex}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blocks",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks"
+              ]
             }
           },
           "event": [
@@ -1072,20 +1694,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"courseId\": {{courseId}},\n  \"code\": \"{{updatedBlockCode}}\",\n  \"title\": \"{{updatedBlockTitle}}\",\n  \"openCost\": {{updatedBlockOpenCost}},\n  \"orderIndex\": {{updatedBlockOrderIndex}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blocks/{{createdBlockId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "{{createdBlockId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "{{createdBlockId}}"
+              ]
             }
           }
         },
@@ -1095,16 +1736,30 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blocks/{{createdBlockId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "{{createdBlockId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "{{createdBlockId}}"
+              ]
             }
           }
         },
@@ -1112,15 +1767,26 @@
           "name": "POST /api/blocks/open",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}},\n  \"blockId\": {{blockId}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blocks/open",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "open"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "open"
+              ]
             }
           }
         },
@@ -1128,15 +1794,26 @@
           "name": "POST /api/blocks/resolve-coefficient",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"difficulty\": \"MEDIUM\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blocks/resolve-coefficient",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blocks", "resolve-coefficient"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blocks",
+                "resolve-coefficient"
+              ]
             }
           }
         }
@@ -1152,11 +1829,22 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/tasks?courseId={{courseId}}&page={{page}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ],
               "query": [
-                { "key": "courseId", "value": "{{courseId}}" },
-                { "key": "page", "value": "{{page}}" }
+                {
+                  "key": "courseId",
+                  "value": "{{courseId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                }
               ]
             }
           },
@@ -1185,8 +1873,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "{{taskId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}"
+              ]
             }
           }
         },
@@ -1196,20 +1890,38 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{newTaskCode}}\",\n  \"title\": \"{{newTaskTitle}}\",\n  \"basePoints\": {{newTaskBasePoints}},\n  \"reviewType\": \"{{newTaskReviewType}}\",\n  \"mentorReviewReward\": {{newTaskMentorReviewReward}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
             }
           },
           "event": [
@@ -1231,20 +1943,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"blockId\": {{blockId}},\n  \"code\": \"{{updatedTaskCode}}\",\n  \"title\": \"{{updatedTaskTitle}}\",\n  \"basePoints\": {{updatedTaskBasePoints}},\n  \"reviewType\": \"{{updatedTaskReviewType}}\",\n  \"mentorReviewReward\": {{updatedTaskMentorReviewReward}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/{{createdTaskId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "{{createdTaskId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{createdTaskId}}"
+              ]
             }
           }
         },
@@ -1254,16 +1985,30 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{adminUsername}}", "type": "string" },
-                { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{adminUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/tasks/{{createdTaskId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "{{createdTaskId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{createdTaskId}}"
+              ]
             }
           }
         },
@@ -1271,15 +2016,26 @@
           "name": "POST /api/tasks/submit",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}},\n  \"taskId\": {{mentorTaskId}},\n  \"difficulty\": \"HARD\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/tasks/submit",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "submit"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "submit"
+              ]
             }
           },
           "event": [
@@ -1306,20 +2062,39 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{mentorEmail}}", "type": "string" },
-                { "key": "password", "value": "{{mentorPassword}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{mentorEmail}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{mentorPassword}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{mentorEmail}}\",\n  \"courseId\": {{courseId}},\n  \"submissionId\": {{submissionId}},\n  \"approved\": true\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/submissions/review",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "submissions", "review"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "submissions",
+                "review"
+              ]
             }
           }
         }
@@ -1332,15 +2107,26 @@
           "name": "POST /api/users/points",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"login\": \"{{basicUsername}}\",\n  \"courseId\": {{courseId}}\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/users/points",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "points"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "points"
+              ]
             }
           }
         }
@@ -1348,61 +2134,201 @@
     }
   ],
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080" },
-    { "key": "page", "value": "0" },
-
-    { "key": "basicUsername", "value": "user@example.com" },
-    { "key": "basicPassword", "value": "user12345" },
-    { "key": "adminUsername", "value": "admin@blps.local" },
-    { "key": "adminPassword", "value": "admin12345" },
-    { "key": "mentorEmail", "value": "mentor@example.com" },
-    { "key": "mentorPassword", "value": "mentor12345" },
-
-    { "key": "newUserEmail", "value": "user@example.com" },
-    { "key": "newUserPassword", "value": "user12345" },
-    { "key": "verificationToken", "value": "" },
-
-    { "key": "e2eRunTs", "value": "" },
-    { "key": "e2eUserEmail", "value": "" },
-    { "key": "e2eUserPassword", "value": "e2eUser12345" },
-    { "key": "e2eVerificationToken", "value": "" },
-    { "key": "e2eCourseId", "value": "" },
-    { "key": "e2eBlockId", "value": "" },
-    { "key": "e2eAutoTaskId", "value": "" },
-    { "key": "e2eMentorTaskId", "value": "" },
-    { "key": "e2eSubmissionId", "value": "" },
-
-    { "key": "courseId", "value": "1" },
-    { "key": "createdCourseId", "value": "" },
-    { "key": "newCourseCode", "value": "SEC-COURSE" },
-    { "key": "newCourseTitle", "value": "Security Course" },
-    { "key": "updatedCourseCode", "value": "SEC-COURSE-UPD" },
-    { "key": "updatedCourseTitle", "value": "Security Course Updated" },
-
-    { "key": "blockId", "value": "1" },
-    { "key": "createdBlockId", "value": "" },
-    { "key": "newBlockCode", "value": "SEC-BLK-1" },
-    { "key": "newBlockTitle", "value": "Security Block" },
-    { "key": "newBlockOpenCost", "value": "100" },
-    { "key": "newBlockOrderIndex", "value": "1" },
-    { "key": "updatedBlockCode", "value": "SEC-BLK-1-UPD" },
-    { "key": "updatedBlockTitle", "value": "Security Block Updated" },
-    { "key": "updatedBlockOpenCost", "value": "120" },
-    { "key": "updatedBlockOrderIndex", "value": "2" },
-
-    { "key": "taskId", "value": "1" },
-    { "key": "autoTaskId", "value": "1" },
-    { "key": "mentorTaskId", "value": "2" },
-    { "key": "createdTaskId", "value": "" },
-    { "key": "newTaskCode", "value": "SEC-T-1" },
-    { "key": "newTaskTitle", "value": "Security Task" },
-    { "key": "newTaskBasePoints", "value": "100" },
-    { "key": "newTaskReviewType", "value": "AUTO" },
-    { "key": "updatedTaskCode", "value": "SEC-T-1-UPD" },
-    { "key": "updatedTaskTitle", "value": "Security Task Updated" },
-    { "key": "updatedTaskBasePoints", "value": "120" },
-    { "key": "updatedTaskReviewType", "value": "MENTOR" },
-
-    { "key": "submissionId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "page",
+      "value": "0"
+    },
+    {
+      "key": "basicUsername",
+      "value": "user@example.com"
+    },
+    {
+      "key": "basicPassword",
+      "value": "user12345"
+    },
+    {
+      "key": "adminUsername",
+      "value": "admin@blps.local"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin12345"
+    },
+    {
+      "key": "mentorEmail",
+      "value": "mentor@example.com"
+    },
+    {
+      "key": "mentorPassword",
+      "value": "mentor12345"
+    },
+    {
+      "key": "newUserEmail",
+      "value": "user@example.com"
+    },
+    {
+      "key": "newUserPassword",
+      "value": "user12345"
+    },
+    {
+      "key": "verificationToken",
+      "value": ""
+    },
+    {
+      "key": "e2eRunTs",
+      "value": ""
+    },
+    {
+      "key": "e2eUserEmail",
+      "value": ""
+    },
+    {
+      "key": "e2eUserPassword",
+      "value": "e2eUser12345"
+    },
+    {
+      "key": "e2eVerificationToken",
+      "value": ""
+    },
+    {
+      "key": "e2eCourseId",
+      "value": ""
+    },
+    {
+      "key": "e2eBlockId",
+      "value": ""
+    },
+    {
+      "key": "e2eAutoTaskId",
+      "value": ""
+    },
+    {
+      "key": "e2eMentorTaskId",
+      "value": ""
+    },
+    {
+      "key": "e2eSubmissionId",
+      "value": ""
+    },
+    {
+      "key": "courseId",
+      "value": "1"
+    },
+    {
+      "key": "createdCourseId",
+      "value": ""
+    },
+    {
+      "key": "newCourseCode",
+      "value": "SEC-COURSE"
+    },
+    {
+      "key": "newCourseTitle",
+      "value": "Security Course"
+    },
+    {
+      "key": "updatedCourseCode",
+      "value": "SEC-COURSE-UPD"
+    },
+    {
+      "key": "updatedCourseTitle",
+      "value": "Security Course Updated"
+    },
+    {
+      "key": "blockId",
+      "value": "1"
+    },
+    {
+      "key": "createdBlockId",
+      "value": ""
+    },
+    {
+      "key": "newBlockCode",
+      "value": "SEC-BLK-1"
+    },
+    {
+      "key": "newBlockTitle",
+      "value": "Security Block"
+    },
+    {
+      "key": "newBlockOpenCost",
+      "value": "100"
+    },
+    {
+      "key": "newBlockOrderIndex",
+      "value": "1"
+    },
+    {
+      "key": "updatedBlockCode",
+      "value": "SEC-BLK-1-UPD"
+    },
+    {
+      "key": "updatedBlockTitle",
+      "value": "Security Block Updated"
+    },
+    {
+      "key": "updatedBlockOpenCost",
+      "value": "120"
+    },
+    {
+      "key": "updatedBlockOrderIndex",
+      "value": "2"
+    },
+    {
+      "key": "taskId",
+      "value": "1"
+    },
+    {
+      "key": "autoTaskId",
+      "value": "1"
+    },
+    {
+      "key": "mentorTaskId",
+      "value": "2"
+    },
+    {
+      "key": "createdTaskId",
+      "value": ""
+    },
+    {
+      "key": "newTaskCode",
+      "value": "SEC-T-1"
+    },
+    {
+      "key": "newTaskTitle",
+      "value": "Security Task"
+    },
+    {
+      "key": "newTaskBasePoints",
+      "value": "100"
+    },
+    {
+      "key": "newTaskReviewType",
+      "value": "AUTO"
+    },
+    {
+      "key": "updatedTaskCode",
+      "value": "SEC-T-1-UPD"
+    },
+    {
+      "key": "updatedTaskTitle",
+      "value": "Security Task Updated"
+    },
+    {
+      "key": "updatedTaskBasePoints",
+      "value": "120"
+    },
+    {
+      "key": "updatedTaskReviewType",
+      "value": "MENTOR"
+    },
+    {
+      "key": "submissionId",
+      "value": ""
+    }
   ]
 }

@@ -8,8 +8,12 @@ import com.blps.app.domain.model.AppUserRole;
 import com.blps.app.domain.model.EmailVerificationToken;
 import com.blps.app.domain.repository.AppUserRepository;
 import com.blps.app.domain.repository.EmailVerificationTokenRepository;
+import com.blps.app.infrastructure.crm.CrmClient;
+import com.blps.app.infrastructure.crm.dto.CrmUserUpsertRequest;
 import com.blps.app.infrastructure.messaging.mail.EmailCommandType;
 import com.blps.app.infrastructure.messaging.mail.MailDispatchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,21 +28,26 @@ import java.util.UUID;
 @Service
 public class AuthManagementService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthManagementService.class);
+
     private final AppUserRepository appUserRepository;
     private final EmailVerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailDispatchService mailDispatchService;
+    private final CrmClient crmClient;
     private final long tokenTtlHours;
 
     public AuthManagementService(AppUserRepository appUserRepository,
                                  EmailVerificationTokenRepository tokenRepository,
                                  PasswordEncoder passwordEncoder,
                                  MailDispatchService mailDispatchService,
+                                 CrmClient crmClient,
                                  @Value("${app.auth.verification-token-ttl-hours:24}") long tokenTtlHours) {
         this.appUserRepository = appUserRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailDispatchService = mailDispatchService;
+        this.crmClient = crmClient;
         this.tokenTtlHours = tokenTtlHours;
     }
 
@@ -101,6 +110,12 @@ public class AuthManagementService {
                 activateImmediately
         );
         appUserRepository.save(user);
+
+        try {
+            crmClient.upsertUser(new CrmUserUpsertRequest(user.getLogin()));
+        } catch (Exception e) {
+            log.warn("Failed to sync new user to CRM: {}", user.getLogin(), e);
+        }
 
         if (activateImmediately) {
             return new RegistrationResponse(

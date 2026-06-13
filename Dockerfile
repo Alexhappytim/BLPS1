@@ -8,7 +8,7 @@ COPY build.gradle settings.gradle ./
 COPY EmailService EmailService
 COPY src src
 
-RUN chmod +x ./gradlew && ./gradlew --no-daemon clean bootJar
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew --no-daemon clean bootJar
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app

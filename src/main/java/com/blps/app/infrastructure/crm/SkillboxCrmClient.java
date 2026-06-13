@@ -1,134 +1,127 @@
 package com.blps.app.infrastructure.crm;
 
-import com.blps.app.common.BusinessException;
 import com.blps.app.infrastructure.crm.dto.*;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import com.blps.app.infrastructure.crm.jca.CrmConnection;
+import com.blps.app.infrastructure.crm.jca.CrmConnectionFactory;
+import jakarta.resource.ResourceException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Adapter implementing {@link CrmClient} by obtaining a JCA {@link CrmConnection}
+ * from the {@link CrmConnectionFactory} for each operation.
+ *
+ * Each method opens a connection, performs the call, then closes it.
+ * The underlying JAX-RS client is shared and thread-safe.
+ */
 @Component
 public class SkillboxCrmClient implements CrmClient {
 
-    private final Client client;
-    private final String baseUrl;
+    private final CrmConnectionFactory connectionFactory;
 
-    public SkillboxCrmClient(Client crmJaxRsClient, String crmBaseUrl) {
-        this.client = crmJaxRsClient;
-        this.baseUrl = crmBaseUrl;
+    public SkillboxCrmClient(CrmConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
     }
 
     @Override
     public List<CrmUserDto> getUsers() {
-        return getList("users", new GenericType<>() {});
+        return execute(CrmConnection::getUsers);
     }
 
     @Override
     public CrmUserDto upsertUser(CrmUserUpsertRequest request) {
-        return post("users", request, CrmUserDto.class);
+        return execute(c -> c.upsertUser(request));
     }
 
     @Override
     public List<CrmMentorDto> getMentors() {
-        return getList("mentors", new GenericType<>() {});
+        return execute(CrmConnection::getMentors);
     }
 
     @Override
     public CrmMentorDto upsertMentor(CrmMentorUpsertRequest request) {
-        return post("mentors", request, CrmMentorDto.class);
+        return execute(c -> c.upsertMentor(request));
     }
 
     @Override
     public List<CrmCourseDto> getCourses() {
-        return getList("courses", new GenericType<>() {});
+        return execute(CrmConnection::getCourses);
     }
 
     @Override
     public CrmCourseDto upsertCourse(CrmCourseUpsertRequest request) {
-        return post("courses", request, CrmCourseDto.class);
+        return execute(c -> c.upsertCourse(request));
     }
 
     @Override
     public List<CrmTaskDto> getTasks() {
-        return getList("tasks", new GenericType<>() {});
+        return execute(CrmConnection::getTasks);
     }
 
     @Override
     public CrmTaskDto upsertTask(CrmTaskUpsertRequest request) {
-        return post("tasks", request, CrmTaskDto.class);
+        return execute(c -> c.upsertTask(request));
     }
 
     @Override
     public List<CrmTaskReviewDto> getTaskReviews() {
-        return getList("task-reviews", new GenericType<>() {});
+        return execute(CrmConnection::getTaskReviews);
     }
 
     @Override
     public CrmTaskReviewDto upsertTaskReview(CrmTaskReviewUpsertRequest request) {
-        return post("task-reviews", request, CrmTaskReviewDto.class);
+        return execute(c -> c.upsertTaskReview(request));
     }
 
     @Override
     public List<CrmCourseInvoiceDto> getCourseInvoices() {
-        return getList("courses/invoice", new GenericType<>() {});
+        return execute(CrmConnection::getCourseInvoices);
     }
 
     @Override
     public CrmCourseInvoiceDto createCourseInvoice(CrmCourseInvoiceRequest request) {
-        return post("courses/invoice", request, CrmCourseInvoiceDto.class);
+        return execute(c -> c.createCourseInvoice(request));
     }
 
     @Override
     public List<CrmMentorPayrollDto> getMentorPayroll() {
-        return getList("mentor/payroll", new GenericType<>() {});
+        return execute(CrmConnection::getMentorPayroll);
     }
 
     @Override
     public CrmMentorPayrollDto createMentorPayroll(CrmMentorPayrollRequest request) {
-        return post("mentor/payroll", request, CrmMentorPayrollDto.class);
+        return execute(c -> c.createMentorPayroll(request));
     }
 
-    private <T> List<T> getList(String path, GenericType<List<T>> type) {
-        try (Response response = client
-                .target(baseUrl)
-                .path(path)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .get()) {
+    // ── JCA execution helper ──────────────────────────────────────────────────
 
-            ensureSuccess(response, "GET", path);
-            return response.readEntity(type);
-        }
-    }
-
-    private <REQ, RES> RES post(String path, REQ requestBody, Class<RES> responseClass) {
-        try (Response response = client
-                .target(baseUrl)
-                .path(path)
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(requestBody, MediaType.APPLICATION_JSON_TYPE))) {
-
-            ensureSuccess(response, "POST", path);
-            return response.readEntity(responseClass);
-        }
-    }
-
-    private void ensureSuccess(Response response, String method, String path) {
-        int status = response.getStatus();
-        if (status >= 200 && status < 300) {
-            return;
-        }
-
-        String body;
+    /**
+     * Opens a JCA connection, applies the given operation, then closes the handle.
+     * Both {@link ResourceException} (from open/close) and any runtime exception
+     * (from the operation itself) are propagated as {@link RuntimeException}.
+     */
+    private <T> T execute(CrmOperation<T> operation) {
+        CrmConnection connection = null;
         try {
-            body = response.readEntity(String.class);
-        } catch (Exception ignored) {
-            body = "<unavailable>";
+            connection = connectionFactory.getConnection();
+            return operation.apply(connection);
+        } catch (ResourceException e) {
+            throw new RuntimeException("JCA CRM connection error", e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (ResourceException e) {
+                    // Log and swallow — close errors should not mask the original result
+                    throw new RuntimeException("Failed to close JCA CRM connection", e);
+                }
+            }
         }
+    }
 
-        throw new BusinessException("CRM call failed: " + method + " " + baseUrl + "/" + path + " -> " + status + "; body=" + body);
+    @FunctionalInterface
+    private interface CrmOperation<T> {
+        T apply(CrmConnection connection) throws ResourceException;
     }
 }

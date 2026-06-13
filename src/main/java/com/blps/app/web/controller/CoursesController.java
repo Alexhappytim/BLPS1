@@ -8,6 +8,7 @@ import com.blps.app.web.dto.CourseCertificateSendResponse;
 import com.blps.app.web.dto.CourseDto;
 import com.blps.app.web.dto.CourseUpsertRequest;
 import com.blps.app.web.dto.PagedResponse;
+import com.blps.app.web.dto.CourseBuyResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
@@ -67,6 +68,16 @@ public class CoursesController {
     @DeleteMapping("/{id}")
     public void deleteCourse(@PathVariable @Positive Long id) {
         learningPlatformService.deleteCourse(id);
+    }
+
+    @PostMapping("/{id}/buy")
+    public CourseBuyResponse buyCourse(@PathVariable @Positive Long id) {
+        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new org.springframework.security.access.AccessDeniedException("User is not authenticated");
+        }
+        com.blps.app.application.service.PaymentInfo info = learningPlatformService.buyCourse(authentication.getName(), id);
+        return new CourseBuyResponse(info.invoiceId(), info.paymentUrl());
     }
 
     @PostMapping("/{id}/certificate/send")
