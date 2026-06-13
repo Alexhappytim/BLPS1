@@ -112,7 +112,11 @@ public class AuthManagementService {
         appUserRepository.save(user);
 
         try {
-            crmClient.upsertUser(new CrmUserUpsertRequest(user.getLogin()));
+            crmClient.upsertUser(new CrmUserUpsertRequest(
+                    user.getId(),
+                    user.getLogin(),
+                    user.getRole().name()
+            ));
         } catch (Exception e) {
             log.warn("Failed to sync new user to CRM: {}", user.getLogin(), e);
         }

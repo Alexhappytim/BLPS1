@@ -36,7 +36,7 @@ server:
 
 app:
   crm:
-    base-url: ${CRM_BASE_URL:http://localhost:1313/BLPS/hs/skillbox}
+    base-url: ${CRM_BASE_URL:http://host.docker.internal:1313/BLPS/hs/skillbox}
   mail:
     enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:}

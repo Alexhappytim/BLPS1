@@ -49,8 +49,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
-      crm-mock:
-        condition: service_started
+#      crm-mock:
+#        condition: service_started
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/blps
       DB_USERNAME: postgres
@@ -61,7 +61,7 @@ services:
       KAFKA_MAIL_TOPIC: ${KAFKA_MAIL_TOPIC:-mail.send}
       KAFKA_AUTH_REGISTER_TOPIC: ${KAFKA_AUTH_REGISTER_TOPIC:-auth.register.telegram}
       KAFKA_AUTH_REGISTER_RESULT_TOPIC: ${KAFKA_AUTH_REGISTER_RESULT_TOPIC:-auth.register.telegram.result}
-      CRM_BASE_URL: http://crm-mock:8085/BLPS/hs/skillbox
+      CRM_BASE_URL: http://host.docker.internal:1313/BLPS/hs/skillbox
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -109,17 +109,17 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     restart: unless-stopped
 
-  crm-mock:
-    build:
-      context: .
-      dockerfile: CrmMockService/Dockerfile
-    container_name: blps-crm-mock
-    environment:
-      BACKEND_URL: http://backend:8080
-      MOCK_CALLBACK_DELAY_MS: 2000
-    ports:
-      - "8085:8085"
-    restart: unless-stopped
+#  crm-mock:
+#    build:
+#      context: .
+#      dockerfile: CrmMockService/Dockerfile
+#    container_name: blps-crm-mock
+#    environment:
+#      BACKEND_URL: http://backend:8080
+#      MOCK_CALLBACK_DELAY_MS: 2000
+#    ports:
+#      - "8085:8085"
+#    restart: unless-stopped
 
 volumes:
   postgres_data:
