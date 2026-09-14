@@ -63,8 +63,11 @@ springdoc:
 camunda:
   bpm:
     admin-user:
-      id: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@blps.local}
+      id: admin
       password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+      email: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@blps.local}
+      first-name: Admin
+      last-name: System
     webapp:
       application-path: /camunda
     job-execution:
