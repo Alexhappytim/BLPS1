@@ -75,6 +75,9 @@ camunda:
     database:
       type: postgres
       schema-update: true
+    generic-properties:
+      properties:
+        historyTimeToLive: P180D
 
 logging:
   level:

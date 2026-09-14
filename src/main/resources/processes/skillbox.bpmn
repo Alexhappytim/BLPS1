@@ -34,7 +34,7 @@
     <bpmn:messageFlow id="Flow_1cklln7" sourceRef="Event_1728f76" targetRef="Event_1lq8esr" />
     <bpmn:messageFlow id="Flow_0eehaj0" sourceRef="Activity_1tbz034" targetRef="Activity_1gr62wh" />
   </bpmn:collaboration>
-  <bpmn:process id="Process_0vrijhn" name="Куратор - Mentor" isExecutable="true">
+  <bpmn:process id="Process_0vrijhn" name="Куратор - Mentor" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:userTask id="Activity_0ajyj54" name="Отправка результатов системе" camunda:candidateGroups="ROLE_MENTOR,ROLE_ADMIN">
       <bpmn:incoming>Flow_1s81rhp</bpmn:incoming>
       <bpmn:outgoing>Flow_0g3i2so</bpmn:outgoing>
@@ -55,8 +55,8 @@
     <bpmn:sequenceFlow id="Flow_0g3i2so" sourceRef="Activity_0ajyj54" targetRef="Event_1tnbgv8" />
     <bpmn:sequenceFlow id="Flow_0e6knp2" sourceRef="Event_03fjrid" targetRef="Activity_1dp1wgk" />
   </bpmn:process>
-  <bpmn:process id="Process_00qvb5l" name="Пользователь - Frontend" isExecutable="true">
-    <bpmn:exclusiveGateway id="Gateway_090wqg2">
+  <bpmn:process id="Process_00qvb5l" name="Пользователь - Frontend" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:exclusiveGateway id="Gateway_090wqg2" default="Flow_0mh9zlw">
       <bpmn:incoming>Flow_0j74l7z</bpmn:incoming>
       <bpmn:outgoing>Flow_0h6snz6</bpmn:outgoing>
       <bpmn:outgoing>Flow_0ponmr3</bpmn:outgoing>
@@ -66,7 +66,7 @@
       <bpmn:incoming>Flow_0lqwr8j</bpmn:incoming>
       <bpmn:outgoing>Flow_0nzzsmp</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_0bjghlu">
+    <bpmn:exclusiveGateway id="Gateway_0bjghlu" default="Flow_1txplht">
       <bpmn:incoming>Flow_0nzzsmp</bpmn:incoming>
       <bpmn:outgoing>Flow_1txplht</bpmn:outgoing>
       <bpmn:outgoing>Flow_0sqom42</bpmn:outgoing>
@@ -76,7 +76,7 @@
       <bpmn:incoming>Flow_14hiqtt</bpmn:incoming>
       <bpmn:outgoing>Flow_0j74l7z</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_146dyfp" name="Есть следующий блок?">
+    <bpmn:exclusiveGateway id="Gateway_146dyfp" name="Есть следующий блок?" default="Flow_0jppdgs">
       <bpmn:incoming>Flow_0ponmr3</bpmn:incoming>
       <bpmn:outgoing>Flow_0jppdgs</bpmn:outgoing>
       <bpmn:outgoing>Flow_1tdvee2</bpmn:outgoing>
@@ -101,7 +101,7 @@
       <bpmn:incoming>Flow_04ao7fh</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_00hu81y" messageRef="Message_TaskSubmit" camunda:delegateExpression="${messageCorrelationDelegate}" />
     </bpmn:intermediateThrowEvent>
-    <bpmn:exclusiveGateway id="Gateway_1oi6bvq" name="Успешно?">
+    <bpmn:exclusiveGateway id="Gateway_1oi6bvq" name="Успешно?" default="Flow_1sel5jv">
       <bpmn:incoming>Flow_0ode31o</bpmn:incoming>
       <bpmn:incoming>Flow_0h6snz6</bpmn:incoming>
       <bpmn:outgoing>Flow_0lqwr8j</bpmn:outgoing>
@@ -127,11 +127,17 @@
       <bpmn:outgoing>Flow_1dgxj4y</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_10f8tim" messageRef="Message_CoeffReady" />
     </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Event_BackToBlock_Target" name="BackToBlock">
+      <bpmn:outgoing>Flow_BackToBlock</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_catch_01" name="BackToBlock" />
+    </bpmn:intermediateCatchEvent>
     <bpmn:userTask id="Activity_04ukpzf" name="Выбор блока" camunda:formRef="open-block" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
       <bpmn:incoming>Flow_0jppdgs</bpmn:incoming>
       <bpmn:incoming>Flow_0w1a6lm</bpmn:incoming>
+      <bpmn:incoming>Flow_BackToBlock</bpmn:incoming>
       <bpmn:outgoing>Flow_105z9fa</bpmn:outgoing>
     </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_BackToBlock" sourceRef="Event_BackToBlock_Target" targetRef="Activity_04ukpzf" />
     <bpmn:intermediateThrowEvent id="Event_040koyh" name="Проверка баллов">
       <bpmn:incoming>Flow_105z9fa</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0144u8n" messageRef="Message_CheckPoints" camunda:delegateExpression="${messageCorrelationDelegate}" />
@@ -147,7 +153,7 @@
     <bpmn:endEvent id="Event_0k92vcz" name="Конец блока">
       <bpmn:incoming>Flow_0i81le7</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:exclusiveGateway id="Gateway_01x1c3m" name="Достаточно баллов?">
+    <bpmn:exclusiveGateway id="Gateway_01x1c3m" name="Достаточно баллов?" default="Flow_03133da">
       <bpmn:incoming>Flow_0bo4528</bpmn:incoming>
       <bpmn:outgoing>Flow_03133da</bpmn:outgoing>
       <bpmn:outgoing>Flow_0i81le7</bpmn:outgoing>
@@ -188,13 +194,21 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_0obbj1u" messageRef="Message_DiffChoice" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="Flow_0j74l7z" sourceRef="Activity_0d6oih5" targetRef="Gateway_090wqg2" />
-    <bpmn:sequenceFlow id="Flow_0h6snz6" name="дождаться проверки" sourceRef="Gateway_090wqg2" targetRef="Gateway_1oi6bvq" />
-    <bpmn:sequenceFlow id="Flow_0ponmr3" name="завершить блок" sourceRef="Gateway_090wqg2" targetRef="Gateway_146dyfp" />
+    <bpmn:sequenceFlow id="Flow_0h6snz6" name="дождаться проверки" sourceRef="Gateway_090wqg2" targetRef="Gateway_1oi6bvq">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${action == 'wait_review'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0ponmr3" name="завершить блок" sourceRef="Gateway_090wqg2" targetRef="Gateway_146dyfp">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${action == 'finish_block'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0mh9zlw" name="выбор задания" sourceRef="Gateway_090wqg2" targetRef="Activity_09eyeot" />
-    <bpmn:sequenceFlow id="Flow_0lqwr8j" name="Да" sourceRef="Gateway_1oi6bvq" targetRef="Activity_1krtzen" />
+    <bpmn:sequenceFlow id="Flow_0lqwr8j" name="Да" sourceRef="Gateway_1oi6bvq" targetRef="Activity_1krtzen">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0nzzsmp" sourceRef="Activity_1krtzen" targetRef="Gateway_0bjghlu" />
     <bpmn:sequenceFlow id="Flow_1txplht" name="Нет" sourceRef="Gateway_0bjghlu" targetRef="Activity_0d6oih5" />
-    <bpmn:sequenceFlow id="Flow_0sqom42" name="Да" sourceRef="Gateway_0bjghlu" targetRef="Activity_0sgoo49" />
+    <bpmn:sequenceFlow id="Flow_0sqom42" name="Да" sourceRef="Gateway_0bjghlu" targetRef="Activity_0sgoo49">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${retry == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_14hiqtt" sourceRef="Activity_0bhlj02" targetRef="Activity_0d6oih5" />
     <bpmn:sequenceFlow id="Flow_1tdvee2" name="Нет" sourceRef="Gateway_146dyfp" targetRef="Activity_0bl4s1r">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hasNextBlock==false}</bpmn:conditionExpression>
@@ -215,21 +229,19 @@
     <bpmn:sequenceFlow id="Flow_105z9fa" sourceRef="Activity_04ukpzf" targetRef="Event_040koyh" />
     <bpmn:sequenceFlow id="Flow_11m1ku3" sourceRef="Activity_0bl4s1r" targetRef="Event_0punqpd" />
     <bpmn:sequenceFlow id="Flow_03133da" name="нет" sourceRef="Gateway_01x1c3m" targetRef="Event_0237xdf" />
-    <bpmn:sequenceFlow id="Flow_0i81le7" name="Да" sourceRef="Gateway_01x1c3m" targetRef="Event_0k92vcz" />
+    <bpmn:sequenceFlow id="Flow_0i81le7" name="Да" sourceRef="Gateway_01x1c3m" targetRef="Event_0k92vcz">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hasEnoughPoints == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0bo4528" sourceRef="Event_0qqinip" targetRef="Gateway_01x1c3m" />
     <bpmn:sequenceFlow id="Flow_0xa8tud" sourceRef="Event_1dk1lu8" targetRef="Event_0j3lta3" />
     <bpmn:sequenceFlow id="Flow_0z97hmj" sourceRef="Event_1soofz9" targetRef="Activity_0mjyi8d" />
     <bpmn:sequenceFlow id="Flow_0tugg1e" sourceRef="Activity_0mjyi8d" targetRef="Event_1cal5rc" />
   </bpmn:process>
-  <bpmn:process id="Process_1gago08" name="Платформа - Backend" isExecutable="true">
-    <bpmn:exclusiveGateway id="Gateway_1f2z01j" name="Куратором или системой?">
-      <bpmn:incoming>Flow_17bfqco</bpmn:incoming>
+  <bpmn:process id="Process_1gago08" name="Платформа - Backend" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:exclusiveGateway id="Gateway_1f2z01j" name="Куратором или системой?" default="Flow_0a6cntz">
+      <bpmn:incoming>Flow_1u4g8zc</bpmn:incoming>
       <bpmn:outgoing>Flow_09w8ba9</bpmn:outgoing>
       <bpmn:outgoing>Flow_0a6cntz</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:exclusiveGateway id="Gateway_0aa6a5z" name="Задание требует проверки?">
-      <bpmn:incoming>Flow_1u4g8zc</bpmn:incoming>
-      <bpmn:outgoing>Flow_17bfqco</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="Activity_1tbz034" name="Приём результатов от куратора" camunda:delegateExpression="${awardPointsDelegate}">
       <bpmn:incoming>Flow_15qsag4</bpmn:incoming>
@@ -251,10 +263,10 @@
       <bpmn:outgoing>Flow_15qsag4</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0963sot" messageRef="Message_ReviewResult" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:intermediateCatchEvent id="Event_06dlu4o" name="Задание&#10;получено">
+    <bpmn:startEvent id="Event_06dlu4o" name="Задание&#10;получено">
       <bpmn:outgoing>Flow_1u4g8zc</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1yg6vse" messageRef="Message_TaskSubmit" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:startEvent>
     <bpmn:intermediateThrowEvent id="Event_10q87k1">
       <bpmn:incoming>Flow_0syyhec</bpmn:incoming>
       <bpmn:incoming>Flow_0ds1yb1</bpmn:incoming>
@@ -266,7 +278,7 @@
       <bpmn:incoming>Flow_0jjl3af</bpmn:incoming>
       <bpmn:outgoing>Flow_0wv24pe</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:exclusiveGateway id="Gateway_0388nwb" name="Уровень сложности?">
+    <bpmn:exclusiveGateway id="Gateway_0388nwb" name="Уровень сложности?" default="Flow_0xvurmf">
       <bpmn:incoming>Flow_1qqmaou</bpmn:incoming>
       <bpmn:outgoing>Flow_0pbf1tn</bpmn:outgoing>
       <bpmn:outgoing>Flow_1xvdw45</bpmn:outgoing>
@@ -284,18 +296,18 @@
       <bpmn:incoming>Flow_0xvurmf</bpmn:incoming>
       <bpmn:outgoing>Flow_0jjl3af</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:intermediateCatchEvent id="Event_0a9a68s" name="Получение выбора&#10;сложности">
+    <bpmn:startEvent id="Event_0a9a68s" name="Получение выбора&#10;сложности">
       <bpmn:outgoing>Flow_1qqmaou</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0z5xjhq" messageRef="Message_DiffChoice" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:startEvent>
     <bpmn:intermediateThrowEvent id="Event_00b1p5e">
       <bpmn:incoming>Flow_0wv24pe</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0zoyace" messageRef="Message_CoeffReady" camunda:delegateExpression="${messageCorrelationDelegate}" />
     </bpmn:intermediateThrowEvent>
-    <bpmn:intermediateCatchEvent id="Event_01lj1an" name="Получение запроса на достаточность баллов">
+    <bpmn:startEvent id="Event_01lj1an" name="Получение запроса на достаточность баллов">
       <bpmn:outgoing>Flow_1wff43j</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0c1g8l3" messageRef="Message_CheckPoints" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:startEvent>
     <bpmn:intermediateThrowEvent id="Event_02rnazz">
       <bpmn:incoming>Flow_1dm8yvm</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0qei70o" messageRef="Message_BlockOpened" camunda:delegateExpression="${messageCorrelationDelegate}" />
@@ -312,18 +324,18 @@
       <bpmn:incoming>Flow_1rcr7at</bpmn:incoming>
       <bpmn:outgoing>Flow_11p6fb5</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:intermediateCatchEvent id="Event_1dc8bfa">
+    <bpmn:startEvent id="Event_1dc8bfa">
       <bpmn:outgoing>Flow_1rcr7at</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0y0y0y2" messageRef="Message_FinishCourse" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:startEvent>
     <bpmn:intermediateThrowEvent id="Event_15t2n9g" name="Отправил на почту/тг">
       <bpmn:incoming>Flow_1ae5jew</bpmn:incoming>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1wttr7a" messageRef="Message_CertificateSent" camunda:delegateExpression="${messageCorrelationDelegate}" />
     </bpmn:intermediateThrowEvent>
-    <bpmn:intermediateCatchEvent id="Event_05dirb3" name="Получение выбора курса">
+    <bpmn:startEvent id="Event_05dirb3" name="Получение выбора курса">
       <bpmn:outgoing>Flow_1friri9</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0stmabh" messageRef="Message_DiffChoice" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:startEvent>
     <bpmn:serviceTask id="Activity_0zqqnr1" name="Формирование запроса к 1С" camunda:expression="${true}">
       <bpmn:incoming>Flow_1friri9</bpmn:incoming>
       <bpmn:outgoing>Flow_0vrl80s</bpmn:outgoing>
@@ -351,7 +363,7 @@
       <bpmn:startEvent id="Event_0634qfc">
         <bpmn:outgoing>Flow_1lgw6fl</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:exclusiveGateway id="Gateway_1cpjvba" name="Задание выполнено повторно?">
+      <bpmn:exclusiveGateway id="Gateway_1cpjvba" name="Задание выполнено повторно?" default="Flow_0kll6ei">
         <bpmn:incoming>Flow_1lgw6fl</bpmn:incoming>
         <bpmn:outgoing>Flow_0kll6ei</bpmn:outgoing>
         <bpmn:outgoing>Flow_1m8by13</bpmn:outgoing>
@@ -380,7 +392,7 @@
         <bpmn:compensateEventDefinition id="CompensateEventDefinition_0n5yfmf" />
       </bpmn:boundaryEvent>
       <bpmn:serviceTask id="Activity_0v5xsgc" name="Откат" isForCompensation="true" camunda:expression="${true}" />
-      <bpmn:exclusiveGateway id="Gateway_1x7wh8g" name="Транзакция прошла упешно?">
+      <bpmn:exclusiveGateway id="Gateway_1x7wh8g" name="Транзакция прошла упешно?" default="Flow_1hbu63l">
         <bpmn:incoming>Flow_15xhxxh</bpmn:incoming>
         <bpmn:outgoing>Flow_1hbu63l</bpmn:outgoing>
         <bpmn:outgoing>Flow_0ozf4o1</bpmn:outgoing>
@@ -402,14 +414,16 @@
         <bpmn:cancelEventDefinition id="CancelEventDefinition_00z8g0a" />
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_1hbu63l" name="Да" sourceRef="Gateway_1x7wh8g" targetRef="Event_1b7rdum" />
-      <bpmn:sequenceFlow id="Flow_0ozf4o1" name="нет" sourceRef="Gateway_1x7wh8g" targetRef="Event_13d2rmy" />
+      <bpmn:sequenceFlow id="Flow_0ozf4o1" name="нет" sourceRef="Gateway_1x7wh8g" targetRef="Event_13d2rmy">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${txFailed == true}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
       <bpmn:association id="Association_0ypniun" associationDirection="One" sourceRef="Event_0ra9ls7" targetRef="Activity_1a56egf" />
       <bpmn:association id="Association_12n86qi" associationDirection="One" sourceRef="Event_1c5je2w" targetRef="Activity_0v5xsgc" />
     </bpmn:transaction>
     <bpmn:transaction id="Activity_1blm16h">
       <bpmn:incoming>Flow_1wff43j</bpmn:incoming>
       <bpmn:outgoing>Flow_1dm8yvm</bpmn:outgoing>
-      <bpmn:exclusiveGateway id="Gateway_1u31fp4" name="Достаточно баллов для открытия?">
+      <bpmn:exclusiveGateway id="Gateway_1u31fp4" name="Достаточно баллов для открытия?" default="Flow_0fz745m">
         <bpmn:incoming>Flow_1x2o9dq</bpmn:incoming>
         <bpmn:outgoing>Flow_1q2lr23</bpmn:outgoing>
         <bpmn:outgoing>Flow_0fz745m</bpmn:outgoing>
@@ -436,7 +450,7 @@
         <bpmn:compensateEventDefinition id="CompensateEventDefinition_1d5fxsn" />
       </bpmn:boundaryEvent>
       <bpmn:serviceTask id="Activity_1670af4" name="Откат" isForCompensation="true" camunda:expression="${true}" />
-      <bpmn:exclusiveGateway id="Gateway_1wthr6l" name="Транзакция прошла упешно?">
+      <bpmn:exclusiveGateway id="Gateway_1wthr6l" name="Транзакция прошла упешно?" default="Flow_0o6uap1">
         <bpmn:incoming>Flow_1t5wsy9</bpmn:incoming>
         <bpmn:outgoing>Flow_0o6uap1</bpmn:outgoing>
         <bpmn:outgoing>Flow_1ri050y</bpmn:outgoing>
@@ -450,7 +464,9 @@
         <bpmn:cancelEventDefinition id="CancelEventDefinition_1c3kk4c" />
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0o6uap1" name="Да" sourceRef="Gateway_1wthr6l" targetRef="Event_04lttpb" />
-      <bpmn:sequenceFlow id="Flow_1ri050y" name="нет" sourceRef="Gateway_1wthr6l" targetRef="Event_13nfmcc" />
+      <bpmn:sequenceFlow id="Flow_1ri050y" name="нет" sourceRef="Gateway_1wthr6l" targetRef="Event_13nfmcc">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${txFailed == true}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_1t5wsy9" sourceRef="Activity_0x6leoh" targetRef="Gateway_1wthr6l" />
       <bpmn:sequenceFlow id="Flow_0qkidsi" sourceRef="Activity_0liu3el" targetRef="Event_04lttpb" />
       <bpmn:startEvent id="Event_0acg4ps">
@@ -467,16 +483,11 @@
       <bpmn:outgoing>Flow_0ds1yb1</bpmn:outgoing>
       <bpmn:cancelEventDefinition id="CancelEventDefinition_095rm4z" />
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_17bfqco" name="Да" sourceRef="Gateway_0aa6a5z" targetRef="Gateway_1f2z01j">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${requiresReview==true}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_09w8ba9" name="Куратором" sourceRef="Gateway_1f2z01j" targetRef="Activity_1phiz1k">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${reviewType=='mentor'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0a6cntz" name="Системой" sourceRef="Gateway_1f2z01j" targetRef="Activity_0bcbhu5">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${reviewType=='auto'}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_1u4g8zc" sourceRef="Event_06dlu4o" targetRef="Gateway_0aa6a5z" />
+    <bpmn:sequenceFlow id="Flow_0a6cntz" name="Системой" sourceRef="Gateway_1f2z01j" targetRef="Activity_0bcbhu5" />
+    <bpmn:sequenceFlow id="Flow_1u4g8zc" sourceRef="Event_06dlu4o" targetRef="Gateway_1f2z01j" />
     <bpmn:sequenceFlow id="Flow_15qsag4" sourceRef="Event_171uz6u" targetRef="Activity_1tbz034" />
     <bpmn:sequenceFlow id="Flow_10izlcy" sourceRef="Activity_1tbz034" targetRef="Activity_15gg477" />
     <bpmn:sequenceFlow id="Flow_1e3phar" sourceRef="Activity_1phiz1k" targetRef="Event_11xayda" />
@@ -494,9 +505,7 @@
     <bpmn:sequenceFlow id="Flow_1xvdw45" name="Средний" sourceRef="Gateway_0388nwb" targetRef="Activity_1qs93wg">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${difficulty=='medium'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0xvurmf" name="Лёгкий" sourceRef="Gateway_0388nwb" targetRef="Activity_0ajhbu1">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${difficulty=='easy'}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0xvurmf" name="Лёгкий" sourceRef="Gateway_0388nwb" targetRef="Activity_0ajhbu1" />
     <bpmn:sequenceFlow id="Flow_1wff43j" sourceRef="Event_01lj1an" targetRef="Activity_1blm16h" />
     <bpmn:sequenceFlow id="Flow_1dm8yvm" sourceRef="Activity_1blm16h" targetRef="Event_02rnazz" />
     <bpmn:sequenceFlow id="Flow_1j22hxk" sourceRef="Event_0zfl19k" targetRef="Event_08l9nld" />
@@ -508,7 +517,7 @@
     <bpmn:sequenceFlow id="Flow_1f9277o" sourceRef="Event_1muzxtt" targetRef="Activity_0xi3dd9" />
     <bpmn:sequenceFlow id="Flow_0fb6frc" sourceRef="Activity_0xi3dd9" targetRef="Event_1728f76" />
   </bpmn:process>
-  <bpmn:process id="Process_0w3y5vt" name="1С - CRM" isExecutable="true">
+  <bpmn:process id="Process_0w3y5vt" name="1С - CRM" isExecutable="false">
     <bpmn:intermediateCatchEvent id="Event_1czzyau" name="Получение выбора курса">
       <bpmn:outgoing>Flow_0hfb0p3</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1p4jjdm" messageRef="Message_DiffChoice" />
@@ -530,7 +539,7 @@
     <bpmn:sequenceFlow id="Flow_16aagyh" sourceRef="Activity_1mlilcc" targetRef="Activity_0wkm8eo" />
     <bpmn:sequenceFlow id="Flow_0dsy1fb" sourceRef="Activity_0wkm8eo" targetRef="Event_1ni06sk" />
   </bpmn:process>
-  <bpmn:process id="Process_0sz4ezi" name="Timer - дневное оповещение" isExecutable="true">
+  <bpmn:process id="Process_0sz4ezi" name="Timer - дневное оповещение" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="Event_16ziev3" name="Ежедневно в 03:00">
       <bpmn:outgoing>Flow_0v73xhq</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_0afdmqs">
@@ -543,7 +552,7 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0v73xhq" sourceRef="Event_16ziev3" targetRef="Activity_0euctjz" />
     <bpmn:sequenceFlow id="Flow_0te74v7" sourceRef="Activity_0euctjz" targetRef="Gateway_0wyrd41" />
-    <bpmn:exclusiveGateway id="Gateway_0wyrd41" name="Почта включена?">
+    <bpmn:exclusiveGateway id="Gateway_0wyrd41" name="Почта включена?" default="Flow_1ulvr12">
       <bpmn:incoming>Flow_0te74v7</bpmn:incoming>
       <bpmn:outgoing>Flow_1ulvr12</bpmn:outgoing>
       <bpmn:outgoing>Flow_1e6cxmy</bpmn:outgoing>
@@ -859,12 +868,6 @@
         <dc:Bounds x="1505" y="785" width="50" height="50" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1413" y="790" width="77" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0bvc308" bpmnElement="Gateway_0aa6a5z" isMarkerVisible="true">
-        <dc:Bounds x="1505" y="655" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1566" y="661" width="87" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_06kphmq" bpmnElement="Activity_1tbz034">
@@ -1188,13 +1191,6 @@
       <bpmndi:BPMNShape id="Event_0zfl19k_di" bpmnElement="Event_0zfl19k">
         <dc:Bounds x="2952" y="607" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="BPMNEdge_09jzbpt" bpmnElement="Flow_17bfqco">
-        <di:waypoint x="1530" y="705" />
-        <di:waypoint x="1530" y="785" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1539" y="746" width="14" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1fh8win" bpmnElement="Flow_09w8ba9">
         <di:waypoint x="1530" y="835" />
         <di:waypoint x="1530" y="940" />
@@ -1212,7 +1208,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_0m2qhww" bpmnElement="Flow_1u4g8zc">
         <di:waypoint x="1530" y="638" />
-        <di:waypoint x="1530" y="655" />
+        <di:waypoint x="1530" y="785" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1rhp9al" bpmnElement="Flow_15qsag4">
         <di:waypoint x="1800" y="1022" />
