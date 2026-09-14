@@ -1,0 +1,52 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "review-task",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Проверка задания куратором\nОзнакомьтесь с решением студента и примите решение о зачёте.",
+      "type": "text",
+      "id": "Text_ReviewHeader"
+    },
+    {
+      "label": "Логин студента",
+      "type": "textfield",
+      "id": "Field_StudentLogin",
+      "key": "login",
+      "disabled": true
+    },
+    {
+      "label": "ID задания",
+      "type": "number",
+      "id": "Field_TaskId",
+      "key": "taskId",
+      "disabled": true
+    },
+    {
+      "label": "Решение студента",
+      "type": "textarea",
+      "id": "Field_StudentSolution",
+      "key": "solution",
+      "disabled": true
+    },
+    {
+      "label": "Одобрить решение (Зачесть задание)",
+      "type": "checkbox",
+      "id": "Field_Approved",
+      "key": "approved",
+      "defaultValue": true
+    },
+    {
+      "label": "Комментарий куратора",
+      "type": "textarea",
+      "id": "Field_Feedback",
+      "key": "feedback"
+    }
+  ]
+}

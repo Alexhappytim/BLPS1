@@ -1,0 +1,36 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "submit-task",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Выполнение и сдача задания\nВведите ваш ответ или решение задания.",
+      "type": "text",
+      "id": "Text_SubmitHeader"
+    },
+    {
+      "label": "ID задания",
+      "type": "number",
+      "id": "Field_TaskId",
+      "key": "taskId",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Решение / Ответ",
+      "type": "textarea",
+      "id": "Field_Solution",
+      "key": "solution",
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

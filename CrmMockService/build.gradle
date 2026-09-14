@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'war'
     id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -23,6 +24,18 @@ dependencies {
     
     // For making outbound REST calls to backend webhook
     implementation 'org.springframework.boot:spring-boot-starter-webflux' 
+
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+}
+
+bootWar {
+    archiveFileName = 'crm-mock-service.war'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+war {
+    archiveFileName = 'crm-mock-service.war'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.named('test') {

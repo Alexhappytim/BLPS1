@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .requiresChannel(channel ->
                         channel.anyRequest().requiresSecure())
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .authenticationProvider(jaasAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/camunda/**", "/engine-rest/**", "/forms/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/confirm-email").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/admin/register").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/mail/test").hasRole("ADMIN")

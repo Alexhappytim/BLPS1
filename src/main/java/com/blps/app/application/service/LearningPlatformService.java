@@ -53,6 +53,7 @@ public class LearningPlatformService {
     private final CourseCertificateSender courseCertificateSender;
     private final CoursePurchaseRepository coursePurchaseRepository;
     private final CrmClient crmClient;
+    private final CamundaProcessService camundaProcessService;
 
     public LearningPlatformService(AppUserRepository appUserRepository,
                                    CourseRepository courseRepository,
@@ -63,7 +64,8 @@ public class LearningPlatformService {
                                    UserBlockAccessRepository userBlockAccessRepository,
                                    CourseCertificateSender courseCertificateSender,
                                    CoursePurchaseRepository coursePurchaseRepository,
-                                   CrmClient crmClient) {
+                                   CrmClient crmClient,
+                                   CamundaProcessService camundaProcessService) {
         this.appUserRepository = appUserRepository;
         this.courseRepository = courseRepository;
         this.courseBlockRepository = courseBlockRepository;
@@ -74,6 +76,7 @@ public class LearningPlatformService {
         this.courseCertificateSender = courseCertificateSender;
         this.coursePurchaseRepository = coursePurchaseRepository;
         this.crmClient = crmClient;
+        this.camundaProcessService = camundaProcessService;
     }
 
     public double resolveCoefficient(Difficulty difficulty) {
@@ -134,6 +137,7 @@ public class LearningPlatformService {
             );
             TaskSubmission saved = taskSubmissionRepository.save(submission);
             trySendCourseCertificate(user, course, progress);
+            camundaProcessService.triggerTaskSubmit(login, courseId, taskId, difficulty.name(), "Auto checked answer", false, "AUTO");
             return new SubmissionResult(
                     saved.getId(),
                     saved.getStatus(),
@@ -155,6 +159,7 @@ public class LearningPlatformService {
                 OffsetDateTime.now()
         );
         TaskSubmission saved = taskSubmissionRepository.save(pending);
+        camundaProcessService.triggerTaskSubmit(login, courseId, taskId, difficulty.name(), "Solution submitted for mentor review", true, "MENTOR");
         return new SubmissionResult(saved.getId(), saved.getStatus(), calculatedPoints, null, progress.getPoints());
     }
 
@@ -205,6 +210,8 @@ public class LearningPlatformService {
             submission.reject(reviewer.getId());
         }
 
+        camundaProcessService.triggerMentorReviewResult(user.getLogin(), course.getId(), task.getId(), approved, null, reviewer.getId());
+
         return new SubmissionResult(
                 submission.getId(),
                 submission.getStatus(),
@@ -238,6 +245,7 @@ public class LearningPlatformService {
 
         progress.subtractPoints(block.getOpenCost());
         userBlockAccessRepository.save(new UserBlockAccess(user, block));
+        camundaProcessService.triggerOpenBlock(login, courseId, blockId);
         return new BlockOpenResult(blockId, false, progress.getPoints());
     }
 

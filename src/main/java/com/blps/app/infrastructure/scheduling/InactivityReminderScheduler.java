@@ -29,7 +29,8 @@ public class InactivityReminderScheduler {
         this.zoneId = ZoneId.systemDefault();
     }
 
-    @Scheduled(cron = "${app.scheduling.inactivity-reminder-cron:0 * * * * *}")
+    // Migrated to Camunda Timer Start Event (Process_0sz4ezi in skillbox.bpmn)
+    // @Scheduled(cron = "${app.scheduling.inactivity-reminder-cron:0 * * * * *}")
     public void sendMonthlyInactivityReminders() {
         if (!mailDispatchService.isMailEnabled()) {
             return;

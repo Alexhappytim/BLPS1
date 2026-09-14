@@ -1,0 +1,34 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "open-block",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Открытие блока курса\nВыберите блок для открытия. Необходимые баллы будут списаны с вашего баланса.",
+      "type": "text",
+      "id": "Text_Header"
+    },
+    {
+      "label": "ID блока курса",
+      "type": "number",
+      "id": "Field_BlockId",
+      "key": "blockId",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Стоимость открытия (баллы)",
+      "type": "number",
+      "id": "Field_OpenCost",
+      "key": "openCost",
+      "disabled": true
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "select-difficulty",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Выбор сложности блока\nВыберите уровень сложности для блока. От сложности зависит коэффициент начисляемых баллов.",
+      "type": "text",
+      "id": "Text_DiffHeader"
+    },
+    {
+      "label": "Сложность",
+      "type": "radio",
+      "id": "Field_Difficulty",
+      "key": "difficulty",
+      "values": [
+        {
+          "label": "Лёгкий (x1.0)",
+          "value": "easy"
+        },
+        {
+          "label": "Средний (x1.5)",
+          "value": "medium"
+        },
+        {
+          "label": "Сложный (x2.0)",
+          "value": "hard"
+        }
+      ],
+      "defaultValue": "easy",
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}
