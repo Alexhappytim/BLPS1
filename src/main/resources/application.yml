@@ -78,6 +78,9 @@ camunda:
     generic-properties:
       properties:
         historyTimeToLive: P180D
+        generalResourceWhitelistPattern: "[a-zA-Z0-9._@/-]+"
+        groupResourceWhitelistPattern: "[a-zA-Z0-9._@/-]+"
+        userResourceWhitelistPattern: "[a-zA-Z0-9._@/-]+"
 
 logging:
   level:
