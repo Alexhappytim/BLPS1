@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.50.1">
   <bpmn:message id="Message_DiffChoice" name="Message_DiffChoice" />
+  <bpmn:message id="Message_CourseChoice" name="Message_CourseChoice" />
   <bpmn:message id="Message_CoeffReady" name="Message_CoeffReady" />
   <bpmn:message id="Message_TaskSubmit" name="Message_TaskSubmit" />
   <bpmn:message id="Message_ReviewReq" name="Message_ReviewReq" />
@@ -76,7 +77,7 @@
       <bpmn:incoming>Flow_14hiqtt</bpmn:incoming>
       <bpmn:outgoing>Flow_0j74l7z</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_146dyfp" name="Есть следующий блок?" default="Flow_0jppdgs">
+    <bpmn:exclusiveGateway id="Gateway_146dyfp" name="Есть следующий блок?">
       <bpmn:incoming>Flow_0ponmr3</bpmn:incoming>
       <bpmn:outgoing>Flow_0jppdgs</bpmn:outgoing>
       <bpmn:outgoing>Flow_1tdvee2</bpmn:outgoing>
@@ -187,7 +188,7 @@
     </bpmn:task>
     <bpmn:intermediateThrowEvent id="Event_1cal5rc">
       <bpmn:incoming>Flow_0tugg1e</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_07lnfis" messageRef="Message_DiffChoice" camunda:delegateExpression="${messageCorrelationDelegate}" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_07lnfis" messageRef="Message_CourseChoice" camunda:delegateExpression="${messageCorrelationDelegate}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:intermediateCatchEvent id="Event_1lq8esr">
       <bpmn:outgoing>Flow_03g28to</bpmn:outgoing>
@@ -334,7 +335,7 @@
     </bpmn:intermediateThrowEvent>
     <bpmn:startEvent id="Event_05dirb3" name="Получение выбора курса">
       <bpmn:outgoing>Flow_1friri9</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0stmabh" messageRef="Message_DiffChoice" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0stmabh" messageRef="Message_CourseChoice" />
     </bpmn:startEvent>
     <bpmn:serviceTask id="Activity_0zqqnr1" name="Формирование запроса к 1С" camunda:expression="${true}">
       <bpmn:incoming>Flow_1friri9</bpmn:incoming>
@@ -363,7 +364,7 @@
       <bpmn:startEvent id="Event_0634qfc">
         <bpmn:outgoing>Flow_1lgw6fl</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:exclusiveGateway id="Gateway_1cpjvba" name="Задание выполнено повторно?" default="Flow_0kll6ei">
+      <bpmn:exclusiveGateway id="Gateway_1cpjvba" name="Задание выполнено повторно?">
         <bpmn:incoming>Flow_1lgw6fl</bpmn:incoming>
         <bpmn:outgoing>Flow_0kll6ei</bpmn:outgoing>
         <bpmn:outgoing>Flow_1m8by13</bpmn:outgoing>
@@ -423,7 +424,7 @@
     <bpmn:transaction id="Activity_1blm16h">
       <bpmn:incoming>Flow_1wff43j</bpmn:incoming>
       <bpmn:outgoing>Flow_1dm8yvm</bpmn:outgoing>
-      <bpmn:exclusiveGateway id="Gateway_1u31fp4" name="Достаточно баллов для открытия?" default="Flow_0fz745m">
+      <bpmn:exclusiveGateway id="Gateway_1u31fp4" name="Достаточно баллов для открытия?">
         <bpmn:incoming>Flow_1x2o9dq</bpmn:incoming>
         <bpmn:outgoing>Flow_1q2lr23</bpmn:outgoing>
         <bpmn:outgoing>Flow_0fz745m</bpmn:outgoing>
@@ -552,7 +553,7 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0v73xhq" sourceRef="Event_16ziev3" targetRef="Activity_0euctjz" />
     <bpmn:sequenceFlow id="Flow_0te74v7" sourceRef="Activity_0euctjz" targetRef="Gateway_0wyrd41" />
-    <bpmn:exclusiveGateway id="Gateway_0wyrd41" name="Почта включена?" default="Flow_1ulvr12">
+    <bpmn:exclusiveGateway id="Gateway_0wyrd41" name="Почта включена?">
       <bpmn:incoming>Flow_0te74v7</bpmn:incoming>
       <bpmn:outgoing>Flow_1ulvr12</bpmn:outgoing>
       <bpmn:outgoing>Flow_1e6cxmy</bpmn:outgoing>
