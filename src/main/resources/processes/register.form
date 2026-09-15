@@ -1,0 +1,37 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "register",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Регистрация нового студента\nВведите ваш email и пароль для создания аккаунта на платформе.",
+      "type": "text",
+      "id": "Text_RegHeader"
+    },
+    {
+      "label": "Электронная почта (Email)",
+      "type": "textfield",
+      "id": "Field_RegEmail",
+      "key": "email",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Пароль",
+      "type": "textfield",
+      "id": "Field_RegPassword",
+      "key": "password",
+      "validate": {
+        "required": true,
+        "minLength": 4
+      }
+    }
+  ]
+}

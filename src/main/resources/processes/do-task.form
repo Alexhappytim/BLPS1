@@ -1,0 +1,38 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "do-task",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Выполнение задания\nОзнакомьтесь с условиями задачи. Подготовьте решение перед отправкой на проверку.",
+      "type": "text",
+      "id": "Text_DoTaskHeader"
+    },
+    {
+      "label": "ID текущего задания",
+      "type": "number",
+      "id": "Field_DoTaskId",
+      "key": "taskId",
+      "disabled": true
+    },
+    {
+      "label": "Черновик решения / Заметки",
+      "type": "textarea",
+      "id": "Field_DraftSolution",
+      "key": "draftSolution"
+    },
+    {
+      "label": "Готов отправить на проверку",
+      "type": "checkbox",
+      "id": "Field_ReadyToSubmit",
+      "key": "readyToSubmit",
+      "defaultValue": true
+    }
+  ]
+}

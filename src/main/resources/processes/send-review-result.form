@@ -1,0 +1,56 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.20.0"
+  },
+  "schemaVersion": 16,
+  "id": "send-review-result",
+  "components": [
+    {
+      "text": "# Отправка результатов проверки студенту\n\nПодтвердите отправку проверенной работы и выставленной оценки студенту.",
+      "type": "text",
+      "id": "Field_header"
+    },
+    {
+      "label": "Логин студента",
+      "type": "textfield",
+      "id": "Field_studentLogin",
+      "key": "login",
+      "disabled": true
+    },
+    {
+      "label": "ID задания",
+      "type": "number",
+      "id": "Field_taskId",
+      "key": "taskId",
+      "disabled": true
+    },
+    {
+      "label": "Одобрено",
+      "type": "checkbox",
+      "id": "Field_approved",
+      "key": "approved",
+      "disabled": true
+    },
+    {
+      "label": "Комментарий куратора",
+      "type": "textarea",
+      "id": "Field_feedback",
+      "key": "feedback",
+      "disabled": true
+    },
+    {
+      "label": "Отправить результат студенту",
+      "type": "checkbox",
+      "id": "Field_sendResultConfirm",
+      "key": "sendResultConfirm",
+      "defaultValue": true,
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default"
+}

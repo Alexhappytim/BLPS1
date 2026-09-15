@@ -1,0 +1,28 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.20.0"
+  },
+  "schemaVersion": 16,
+  "id": "finish-course",
+  "components": [
+    {
+      "text": "# Завершение курса\n\nПоздравляем! Вы прошли все материалы и задачи курса.\nНажмите **Подтвердить**, чтобы завершить прохождение курса и зафиксировать результаты.",
+      "type": "text",
+      "id": "Field_header"
+    },
+    {
+      "label": "Подтверждаю завершение курса",
+      "type": "checkbox",
+      "id": "Field_confirmFinish",
+      "key": "confirmFinish",
+      "defaultValue": true,
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default"
+}

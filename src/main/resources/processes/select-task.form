@@ -1,0 +1,28 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "select-task",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Выбор задания\nВыберите ID практического задания из открытого блока для выполнения.",
+      "type": "text",
+      "id": "Text_SelectTaskHeader"
+    },
+    {
+      "label": "ID задания",
+      "type": "number",
+      "id": "Field_SelectedTaskId",
+      "key": "taskId",
+      "defaultValue": 1,
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

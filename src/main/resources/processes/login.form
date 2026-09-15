@@ -1,0 +1,36 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "login",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Авторизация в системе\nВведите логин (email) и пароль для входа и сохранения сессии.",
+      "type": "text",
+      "id": "Text_LoginHeader"
+    },
+    {
+      "label": "Логин / Email",
+      "type": "textfield",
+      "id": "Field_LoginUser",
+      "key": "login",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Пароль",
+      "type": "textfield",
+      "id": "Field_LoginPassword",
+      "key": "password",
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

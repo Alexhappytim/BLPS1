@@ -1,0 +1,51 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.20.0"
+  },
+  "schemaVersion": 16,
+  "id": "retry-choice",
+  "components": [
+    {
+      "text": "# Результат проверки задачи\n\nКуратор оставил комментарий по вашей домашней работе.",
+      "type": "text",
+      "id": "Field_header"
+    },
+    {
+      "label": "Комментарий куратора",
+      "type": "textarea",
+      "id": "Field_feedback",
+      "key": "feedback",
+      "disabled": true
+    },
+    {
+      "label": "Одобрено ли куратором",
+      "type": "checkbox",
+      "id": "Field_approved",
+      "key": "approved",
+      "disabled": true
+    },
+    {
+      "label": "Желаете ли вы переделать задачу?",
+      "type": "radio",
+      "id": "Field_choice",
+      "key": "choice",
+      "values": [
+        {
+          "label": "Переделать задачу заново",
+          "value": "retry"
+        },
+        {
+          "label": "Продолжить обучение (не переделывать)",
+          "value": "continue"
+        }
+      ],
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default"
+}

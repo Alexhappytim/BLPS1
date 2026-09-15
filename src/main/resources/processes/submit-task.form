@@ -31,6 +31,26 @@
       "validate": {
         "required": true
       }
+    },
+    {
+      "label": "Тип проверки",
+      "type": "radio",
+      "id": "Field_ReviewType",
+      "key": "reviewType",
+      "defaultValue": "mentor",
+      "values": [
+        {
+          "label": "Проверка куратором",
+          "value": "mentor"
+        },
+        {
+          "label": "Автоматическая проверка системой",
+          "value": "auto"
+        }
+      ],
+      "validate": {
+        "required": true
+      }
     }
   ]
 }

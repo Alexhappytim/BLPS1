@@ -3,7 +3,10 @@ package com.blps.app.security.camunda;
 import com.blps.app.domain.model.AppUser;
 import com.blps.app.domain.model.AppUserRole;
 import com.blps.app.domain.repository.AppUserRepository;
+import org.camunda.bpm.engine.FilterService;
 import org.camunda.bpm.engine.IdentityService;
+import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.filter.Filter;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.User;
 import org.slf4j.Logger;
@@ -12,7 +15,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 public class CamundaUserSyncService {
@@ -20,7 +25,10 @@ public class CamundaUserSyncService {
     private static final Logger log = LoggerFactory.getLogger(CamundaUserSyncService.class);
 
     @Bean
-    CommandLineRunner syncCamundaUsers(IdentityService identityService, AppUserRepository appUserRepository) {
+    CommandLineRunner syncCamundaUsers(IdentityService identityService,
+                                      AppUserRepository appUserRepository,
+                                      FilterService filterService,
+                                      TaskService taskService) {
         return args -> {
             ensureGroup(identityService, "ROLE_ADMIN", "Administrators");
             ensureGroup(identityService, "ROLE_MENTOR", "Curators and Mentors");
@@ -28,12 +36,34 @@ public class CamundaUserSyncService {
 
             List<AppUser> users = appUserRepository.findAll();
             for (AppUser user : users) {
-                syncUser(identityService, user.getLogin(), user.getRole());
+                syncUser(identityService, user.getLogin(), null, user.getRole());
+            }
+
+            // Ensure a default filter exists so tasks are visible in Camunda Tasklist
+            try {
+                if (filterService.createFilterQuery().filterName("Все задачи").count() == 0) {
+                    Map<String, Object> filterProperties = new HashMap<>();
+                    filterProperties.put("description", "Все активные задачи процессов");
+                    filterProperties.put("priority", 10);
+                    filterProperties.put("refresh", true);
+
+                    Filter filter = filterService.newTaskFilter("Все задачи")
+                            .setQuery(taskService.createTaskQuery())
+                            .setProperties(filterProperties);
+                    filterService.saveFilter(filter);
+                    log.info("Created default Camunda Tasklist filter: Все задачи");
+                }
+            } catch (Exception e) {
+                log.warn("Failed to create default Camunda filter: {}", e.getMessage());
             }
         };
     }
 
     public static void syncUser(IdentityService identityService, String login, AppUserRole role) {
+        syncUser(identityService, login, null, role);
+    }
+
+    public static void syncUser(IdentityService identityService, String login, String rawPassword, AppUserRole role) {
         if (identityService.isReadOnly()) {
             return;
         }
@@ -42,23 +72,28 @@ public class CamundaUserSyncService {
         if (camundaUser == null) {
             camundaUser = identityService.newUser(login);
             camundaUser.setFirstName(login);
-            camundaUser.setLastName(role.name());
+            camundaUser.setLastName(role != null ? role.name() : "USER");
             camundaUser.setEmail(login.contains("@") ? login : login + "@blps.local");
-            camundaUser.setPassword("password"); // Default or user password for Tasklist login
+            camundaUser.setPassword(rawPassword != null ? rawPassword : "password");
             identityService.saveUser(camundaUser);
             log.info("Created Camunda user: {}", login);
+        } else if (rawPassword != null) {
+            camundaUser.setPassword(rawPassword);
+            identityService.saveUser(camundaUser);
         }
 
-        String groupId = "ROLE_" + role.name();
-        Group group = identityService.createGroupQuery().groupId(groupId).singleResult();
-        if (group != null) {
-            boolean alreadyMember = identityService.createUserQuery()
-                    .userId(login)
-                    .memberOfGroup(groupId)
-                    .count() > 0;
-            if (!alreadyMember) {
-                identityService.createMembership(login, groupId);
-                log.info("Added Camunda user {} to group {}", login, groupId);
+        if (role != null) {
+            String groupId = "ROLE_" + role.name();
+            Group group = identityService.createGroupQuery().groupId(groupId).singleResult();
+            if (group != null) {
+                boolean alreadyMember = identityService.createUserQuery()
+                        .userId(login)
+                        .memberOfGroup(groupId)
+                        .count() > 0;
+                if (!alreadyMember) {
+                    identityService.createMembership(login, groupId);
+                    log.info("Added Camunda user {} to group {}", login, groupId);
+                }
             }
         }
     }

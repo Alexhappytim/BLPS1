@@ -1,0 +1,42 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.20.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.20.0"
+  },
+  "schemaVersion": 16,
+  "id": "action-choice",
+  "components": [
+    {
+      "text": "# Выбор дальнейшего действия\n\nТекущая задача выполнена. Что вы хотите сделать дальше?",
+      "type": "text",
+      "id": "Field_header"
+    },
+    {
+      "label": "Выберите следующее действие:",
+      "type": "radio",
+      "id": "Field_action",
+      "key": "action",
+      "defaultValue": "next_task",
+      "values": [
+        {
+          "label": "Перейти к выбору/следующей задаче блока",
+          "value": "next_task"
+        },
+        {
+          "label": "Завершить текущий блок",
+          "value": "finish_block"
+        },
+        {
+          "label": "Ожидать проверки куратора",
+          "value": "wait_review"
+        }
+      ],
+      "validate": {
+        "required": true
+      }
+    }
+  ],
+  "type": "default"
+}

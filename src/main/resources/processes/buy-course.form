@@ -1,0 +1,35 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "buy-course",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Покупка курса\nПодтвердите выбор курса для записи и открытия доступа через систему 1С.",
+      "type": "text",
+      "id": "Text_BuyHeader"
+    },
+    {
+      "label": "ID курса",
+      "type": "number",
+      "id": "Field_CourseId",
+      "key": "courseId",
+      "defaultValue": 1,
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Подтвердить покупку",
+      "type": "checkbox",
+      "id": "Field_ConfirmPurchase",
+      "key": "confirmPurchase",
+      "defaultValue": true
+    }
+  ]
+}

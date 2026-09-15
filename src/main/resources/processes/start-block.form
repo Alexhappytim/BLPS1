@@ -1,0 +1,25 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "start-block",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Начало блока курса\nДоступ к курсу открыт в системе 1С. Перейдите к настройке сложности первого блока курса.",
+      "type": "text",
+      "id": "Text_StartBlockHeader"
+    },
+    {
+      "label": "Готов начать блок",
+      "type": "checkbox",
+      "id": "Field_ReadyStartBlock",
+      "key": "readyStartBlock",
+      "defaultValue": true
+    }
+  ]
+}

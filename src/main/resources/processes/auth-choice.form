@@ -1,0 +1,38 @@
+{
+  "executionPlatform": "Camunda Platform",
+  "executionPlatformVersion": "7.22.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.50.1"
+  },
+  "schemaVersion": 16,
+  "id": "auth-choice",
+  "type": "default",
+  "components": [
+    {
+      "text": "### Добро пожаловать в обучающую платформу!\nВыберите, хотите ли вы войти в существующий аккаунт или зарегистрировать новый.",
+      "type": "text",
+      "id": "Text_AuthHeader"
+    },
+    {
+      "label": "Действие",
+      "type": "radio",
+      "id": "Field_AuthAction",
+      "key": "authAction",
+      "values": [
+        {
+          "label": "Войти в систему (уже есть аккаунт)",
+          "value": "login"
+        },
+        {
+          "label": "Зарегистрироваться (новый пользователь)",
+          "value": "register"
+        }
+      ],
+      "defaultValue": "login",
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

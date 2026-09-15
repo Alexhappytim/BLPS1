@@ -53,7 +53,7 @@ Get-Content $CleanupScript -Raw |
 Write-Host ""
 Write-Host "HELIOS cleanup completed." -ForegroundColor Green
 Write-Host ""
-
+Start-Sleep -Seconds 10
 # ============================================================
 # 3. Build WARs
 # ============================================================
@@ -89,7 +89,7 @@ else {
     Write-Host ""
 
 }
-
+Start-Sleep -Seconds 10
 # ============================================================
 # 4. Upload WARs + deploy script
 # ============================================================
@@ -165,7 +165,7 @@ else {
     Write-Host ""
 
 }
-
+Start-Sleep -Seconds 15
 # ============================================================
 # 5. New SSH + tunnels + WildFly
 # ============================================================
@@ -183,7 +183,6 @@ else {
 Write-Host "SSH tunnels:" -ForegroundColor DarkGray
 Write-Host "  localhost:24127 -> HELIOS:24127" -ForegroundColor DarkGray
 Write-Host "  localhost:24129 -> HELIOS:24129" -ForegroundColor DarkGray
-Write-Host "  HELIOS:1313 -> localhost:1313" -ForegroundColor DarkGray
 Write-Host "  HELIOS:27777 -> localhost:9092" -ForegroundColor DarkGray
 Write-Host ""
 
@@ -191,7 +190,6 @@ ssh `
     -p $SshPort `
     -L 24127:localhost:24127 `
     -L 24129:localhost:24129 `
-    -R 1313:localhost:1313 `
     -R 27777:localhost:9092 `
     "$SshUser@$SshHost" `
     $RemoteCommand
