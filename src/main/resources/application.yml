@@ -31,10 +31,6 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
-  ssl:
-    enabled: true
-    certificate: classpath:cert.pem
-    certificate-private-key: classpath:key.pem
 
 app:
   crm:
@@ -68,8 +64,6 @@ camunda:
       email: ${AUTH_BOOTSTRAP_ADMIN_EMAIL:admin@blps.local}
       first-name: Admin
       last-name: System
-    webapp:
-      application-path: /camunda
     job-execution:
       enabled: true
     database:
