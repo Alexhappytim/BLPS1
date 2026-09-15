@@ -15,25 +15,31 @@ import java.util.Locale;
 public class SecurityBootstrapInitializer {
 
     @Bean
-    CommandLineRunner bootstrapAdmin(
+    CommandLineRunner bootstrapDefaultUsers(
             AppUserRepository appUserRepository,
             PasswordEncoder passwordEncoder,
             @Value("${app.auth.bootstrap-admin.email:admin@blps.local}") String adminEmail,
             @Value("${app.auth.bootstrap-admin.password:admin12345}") String adminPassword
     ) {
         return args -> {
-            String normalizedEmail = adminEmail.trim().toLowerCase(Locale.ROOT);
-            if (appUserRepository.existsByLogin(normalizedEmail)) {
-                return;
-            }
-            AppUser admin = new AppUser(
-                    normalizedEmail,
-                    passwordEncoder.encode(adminPassword),
-                    AppUserRole.ADMIN,
-                    true,
-                    true
-            );
-            appUserRepository.save(admin);
+            ensureUser(appUserRepository, passwordEncoder, adminEmail, adminPassword, AppUserRole.ADMIN);
+            ensureUser(appUserRepository, passwordEncoder, "mentor@blps.local", "mentor12345", AppUserRole.MENTOR);
+            ensureUser(appUserRepository, passwordEncoder, "student@blps.local", "student12345", AppUserRole.USER);
         };
+    }
+
+    private void ensureUser(AppUserRepository repo, PasswordEncoder encoder, String email, String password, AppUserRole role) {
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        if (repo.existsByLogin(normalizedEmail)) {
+            return;
+        }
+        AppUser user = new AppUser(
+                normalizedEmail,
+                encoder.encode(password),
+                role,
+                true,
+                true
+        );
+        repo.save(user);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class RootRedirectController {
 
     @GetMapping("/")
-    public String redirectToTasklist() {
-        return "redirect:/camunda/app/tasklist/default/#/?processDefinitionKey=Process_00qvb5l";
+    public String index() {
+        return "forward:/index.html";
     }
 }

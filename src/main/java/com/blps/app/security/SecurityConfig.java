@@ -54,8 +54,9 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(jaasAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/app.js", "/style.css", "/static/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/camunda/**", "/engine-rest/**", "/forms/**").permitAll()
+                        .requestMatchers("/api/process/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/confirm-email").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/admin/register").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/mail/test").hasRole("ADMIN")

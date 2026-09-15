@@ -3,9 +3,13 @@ package com.blps.app.security.camunda;
 import com.blps.app.domain.model.AppUser;
 import com.blps.app.domain.model.AppUserRole;
 import com.blps.app.domain.repository.AppUserRepository;
+import org.camunda.bpm.engine.AuthorizationService;
 import org.camunda.bpm.engine.FilterService;
 import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.authorization.Authorization;
+import org.camunda.bpm.engine.authorization.Permissions;
+import org.camunda.bpm.engine.authorization.Resources;
 import org.camunda.bpm.engine.filter.Filter;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.User;
@@ -28,30 +32,58 @@ public class CamundaUserSyncService {
     CommandLineRunner syncCamundaUsers(IdentityService identityService,
                                       AppUserRepository appUserRepository,
                                       FilterService filterService,
-                                      TaskService taskService) {
+                                      TaskService taskService,
+                                      AuthorizationService authorizationService) {
         return args -> {
             ensureGroup(identityService, "ROLE_ADMIN", "Administrators");
             ensureGroup(identityService, "ROLE_MENTOR", "Curators and Mentors");
             ensureGroup(identityService, "ROLE_USER", "Students");
 
+            // Grant application access to tasklist for all roles
+            grantAppAccess(authorizationService, "ROLE_ADMIN", "tasklist");
+            grantAppAccess(authorizationService, "ROLE_MENTOR", "tasklist");
+            grantAppAccess(authorizationService, "ROLE_USER", "tasklist");
+            grantAppAccess(authorizationService, "ROLE_ADMIN", "cockpit");
+            grantAppAccess(authorizationService, "ROLE_ADMIN", "admin");
+
+            // Known default passwords
+            Map<String, String> defaultPasswords = Map.of(
+                    "admin", "admin12345",
+                    "admin@blps.local", "admin12345",
+                    "mentor@blps.local", "mentor12345",
+                    "student@blps.local", "student12345"
+            );
+
+            // Sync admin system user
+            syncUser(identityService, "admin", "admin12345", AppUserRole.ADMIN);
+
             List<AppUser> users = appUserRepository.findAll();
             for (AppUser user : users) {
-                syncUser(identityService, user.getLogin(), null, user.getRole());
+                String pwd = defaultPasswords.getOrDefault(user.getLogin(), "password");
+                syncUser(identityService, user.getLogin(), pwd, user.getRole());
             }
 
-            // Ensure a default filter exists so tasks are visible in Camunda Tasklist
+            // Ensure a default filter exists so tasks are immediately visible in Camunda Tasklist
             try {
-                if (filterService.createFilterQuery().filterName("Все задачи").count() == 0) {
+                Filter filter = filterService.createFilterQuery().filterName("Все задачи").singleResult();
+                if (filter == null) {
                     Map<String, Object> filterProperties = new HashMap<>();
                     filterProperties.put("description", "Все активные задачи процессов");
                     filterProperties.put("priority", 10);
                     filterProperties.put("refresh", true);
 
-                    Filter filter = filterService.newTaskFilter("Все задачи")
+                    filter = filterService.newTaskFilter("Все задачи")
                             .setQuery(taskService.createTaskQuery())
                             .setProperties(filterProperties);
                     filterService.saveFilter(filter);
                     log.info("Created default Camunda Tasklist filter: Все задачи");
+                }
+
+                // Ensure filter read permission
+                if (filter != null) {
+                    grantFilterAccess(authorizationService, "ROLE_ADMIN", filter.getId());
+                    grantFilterAccess(authorizationService, "ROLE_MENTOR", filter.getId());
+                    grantFilterAccess(authorizationService, "ROLE_USER", filter.getId());
                 }
             } catch (Exception e) {
                 log.warn("Failed to create default Camunda filter: {}", e.getMessage());
@@ -77,7 +109,7 @@ public class CamundaUserSyncService {
             camundaUser.setPassword(rawPassword != null ? rawPassword : "password");
             identityService.saveUser(camundaUser);
             log.info("Created Camunda user: {}", login);
-        } else if (rawPassword != null) {
+        } else if (rawPassword != null && !rawPassword.isBlank()) {
             camundaUser.setPassword(rawPassword);
             identityService.saveUser(camundaUser);
         }
@@ -109,6 +141,48 @@ public class CamundaUserSyncService {
             group.setType("WORKFLOW");
             identityService.saveGroup(group);
             log.info("Created Camunda group: {}", groupId);
+        }
+    }
+
+    private void grantAppAccess(AuthorizationService authService, String groupId, String appName) {
+        try {
+            long count = authService.createAuthorizationQuery()
+                    .groupIdIn(groupId)
+                    .resourceType(Resources.APPLICATION)
+                    .resourceId(appName)
+                    .count();
+            if (count == 0) {
+                Authorization auth = authService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
+                auth.setGroupId(groupId);
+                auth.setResource(Resources.APPLICATION);
+                auth.setResourceId(appName);
+                auth.addPermission(Permissions.ACCESS);
+                authService.saveAuthorization(auth);
+                log.info("Granted {} access to app {}", groupId, appName);
+            }
+        } catch (Exception e) {
+            log.debug("Could not set app authorization: {}", e.getMessage());
+        }
+    }
+
+    private void grantFilterAccess(AuthorizationService authService, String groupId, String filterId) {
+        try {
+            long count = authService.createAuthorizationQuery()
+                    .groupIdIn(groupId)
+                    .resourceType(Resources.FILTER)
+                    .resourceId(filterId)
+                    .count();
+            if (count == 0) {
+                Authorization auth = authService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
+                auth.setGroupId(groupId);
+                auth.setResource(Resources.FILTER);
+                auth.setResourceId(filterId);
+                auth.addPermission(Permissions.READ);
+                authService.saveAuthorization(auth);
+                log.info("Granted {} access to filter {}", groupId, filterId);
+            }
+        } catch (Exception e) {
+            log.debug("Could not set filter authorization: {}", e.getMessage());
         }
     }
 }
