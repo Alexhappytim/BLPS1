@@ -58,6 +58,10 @@ springdoc:
 
 camunda:
   bpm:
+    deployment-resource-pattern:
+      - "classpath*:processes/**/*.bpmn"
+      - "classpath*:processes/**/*.bpmn20.xml"
+      - "classpath*:processes/**/*.form"
     admin-user:
       id: admin
       password: ${AUTH_BOOTSTRAP_ADMIN_PASSWORD:admin12345}
