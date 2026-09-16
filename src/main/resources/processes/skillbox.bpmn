@@ -6,6 +6,8 @@
   <bpmn:message id="Message_ReviewReq" name="Запрос проверки куратору" />
   <bpmn:message id="Message_ReviewResult" name="Результат проверки получен" />
   <bpmn:message id="Message_PointsCredited" name="Баллы начислены" />
+  <bpmn:message id="Message_CrmPaymentRequest" name="Запрос оплаты в 1С отправлен" />
+  <bpmn:message id="Message_CrmPaymentConfirmed" name="Оплата курса подтверждена 1C" />
   <bpmn:collaboration id="Collaboration_0bl9e4k">
     <bpmn:participant id="Participant_1cps31v" name="Timer - дневное оповещение" processRef="Process_0sz4ezi" />
     <bpmn:participant id="Participant_0h6pm3h" name="1С - CRM" processRef="Process_0jcre2c" />
@@ -60,7 +62,7 @@
     </bpmn:serviceTask>
     <bpmn:intermediateThrowEvent id="Event_11inbrq">
       <bpmn:incoming>Flow_1udgpm7</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1uhwa8w" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1uhwa8w" messageRef="Message_CrmPaymentConfirmed" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_15frk0d" sourceRef="Event_01a4y6z" targetRef="Activity_1qhzvwl" />
     <bpmn:sequenceFlow id="Flow_0gg7256" sourceRef="Activity_1qhzvwl" targetRef="Activity_0aq0j4x" />
@@ -76,7 +78,7 @@
     </bpmn:serviceTask>
     <bpmn:intermediateCatchEvent id="Event_01a4y6z" name="Получение выбора курса">
       <bpmn:outgoing>Flow_15frk0d</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_1i94mja" messageRef="Message_DiffChoice" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1i94mja" messageRef="Message_CrmPaymentRequest" />
     </bpmn:intermediateCatchEvent>
   </bpmn:process>
   <bpmn:process id="Process_00qvb5l" name="Платформа обучения" isExecutable="true" camunda:historyTimeToLive="180">
@@ -301,15 +303,16 @@
       <bpmn:incoming>Flow_0szpbvk</bpmn:incoming>
       <bpmn:outgoing>Flow_1yiatlp</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_13adnc1" name="Формирование запроса к 1С" camunda:expression="${true}">
+    <bpmn:serviceTask id="Activity_13adnc1" name="Формирование запроса к 1С" camunda:delegateExpression="${prepareCrmPaymentRequestDelegate}">
       <bpmn:incoming>Flow_1jvh685</bpmn:incoming>
       <bpmn:outgoing>Flow_11z742b</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:intermediateCatchEvent id="Event_0wzufge">
+    <bpmn:intermediateCatchEvent id="Event_0wzufge" name="Ожидание подтверждения оплаты от 1С">
+      <bpmn:incoming>Flow_PaymentSentToWait</bpmn:incoming>
       <bpmn:outgoing>Flow_0i3wxrz</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0rg9ygb" messageRef="Message_DiffChoice" />
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0rg9ygb" messageRef="Message_CrmPaymentConfirmed" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:serviceTask id="Activity_1or579w" name="Открытые доступа к курсу" camunda:expression="${true}">
+    <bpmn:serviceTask id="Activity_1or579w" name="Открытые доступа к курсу" camunda:delegateExpression="${grantCourseAccessDelegate}">
       <bpmn:incoming>Flow_0i3wxrz</bpmn:incoming>
       <bpmn:outgoing>Flow_1jhkmpm</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -326,9 +329,10 @@
       <bpmn:incoming>Flow_LoginToBuyCourse</bpmn:incoming>
       <bpmn:outgoing>Flow_1jvh685</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:intermediateThrowEvent id="Event_0unevc2">
+    <bpmn:intermediateThrowEvent id="Event_0unevc2" name="Отправка запроса на оплату в 1С">
       <bpmn:incoming>Flow_11z742b</bpmn:incoming>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_0pv7vrn" messageRef="Message_DiffChoice" camunda:delegateExpression="${messageCorrelationDelegate}" />
+      <bpmn:outgoing>Flow_PaymentSentToWait</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0pv7vrn" messageRef="Message_CrmPaymentRequest" camunda:delegateExpression="${createCrmPaymentDelegate}" />
     </bpmn:intermediateThrowEvent>
     <bpmn:exclusiveGateway id="Gateway_1oyrmz0">
       <bpmn:incoming>Flow_1vcosza</bpmn:incoming>
@@ -462,6 +466,7 @@
     <bpmn:sequenceFlow id="Flow_1yiatlp" sourceRef="Activity_07amv92" targetRef="Activity_1f5fye8" />
     <bpmn:sequenceFlow id="Flow_1jvh685" sourceRef="Activity_1kedmqx" targetRef="Activity_13adnc1" />
     <bpmn:sequenceFlow id="Flow_11z742b" sourceRef="Activity_13adnc1" targetRef="Event_0unevc2" />
+    <bpmn:sequenceFlow id="Flow_PaymentSentToWait" sourceRef="Event_0unevc2" targetRef="Event_0wzufge" />
     <bpmn:sequenceFlow id="Flow_0i3wxrz" sourceRef="Event_0wzufge" targetRef="Activity_1or579w" />
     <bpmn:sequenceFlow id="Flow_1mkygza" sourceRef="Activity_1vxu8a7" targetRef="Activity_09hefnt" />
     <bpmn:sequenceFlow id="Flow_1vcosza" sourceRef="Activity_0ml8c60" targetRef="Gateway_1oyrmz0" />
@@ -1399,6 +1404,10 @@
       <bpmndi:BPMNEdge id="Flow_1bc8y69_di" bpmnElement="Flow_1bc8y69">
         <di:waypoint x="500" y="1048" />
         <di:waypoint x="500" y="1422" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PaymentSentToWait_di" bpmnElement="Flow_PaymentSentToWait">
+        <di:waypoint x="518" y="1030" />
+        <di:waypoint x="672" y="1030" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16uprh6_di" bpmnElement="Flow_16uprh6">
         <di:waypoint x="690" y="1422" />
