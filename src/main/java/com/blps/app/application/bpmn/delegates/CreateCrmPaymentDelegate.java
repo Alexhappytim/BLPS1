@@ -79,6 +79,8 @@ public class CreateCrmPaymentDelegate implements JavaDelegate {
             return;
         }
 
+        execution.setVariable("login", login);
+
         // 1. If course is already paid, fast-forward payment confirmation so process doesn't halt
         if (coursePurchaseRepository.existsByUserAndCourseAndStatus(user, course, CoursePurchaseStatus.PAID)) {
             log.info("Course [{}] already purchased and PAID for user [{}]. Triggering immediate confirmation.", courseId, login);
@@ -132,11 +134,17 @@ public class CreateCrmPaymentDelegate implements JavaDelegate {
                     } catch (Exception ignored) {
                     }
                 }
-                runtimeService.createMessageCorrelation("Message_CrmPaymentConfirmed")
-                        .processInstanceVariableEquals("login", login)
-                        .setVariable("paymentSuccess", success)
-                        .correlateAll();
-                log.info("Async payment correlation succeeded for user [{}]", login);
+                for (String msgName : java.util.List.of("Оплата курса подтверждена 1C", "Оплата курса подтверждена 1С", "Message_CrmPaymentConfirmed")) {
+                    try {
+                        runtimeService.createMessageCorrelation(msgName)
+                                .processInstanceVariableEquals("login", login)
+                                .setVariable("paymentSuccess", success)
+                                .correlateAll();
+                        log.info("Async payment correlation succeeded for user [{}] with message [{}]", login, msgName);
+                        break;
+                    } catch (Exception ignored) {
+                    }
+                }
             } catch (Exception ex) {
                 log.debug("Async correlation retry info: {}", ex.getMessage());
             }

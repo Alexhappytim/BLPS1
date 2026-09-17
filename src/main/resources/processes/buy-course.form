@@ -23,13 +23,6 @@
       "validate": {
         "required": true
       }
-    },
-    {
-      "label": "Подтвердить покупку",
-      "type": "checkbox",
-      "id": "Field_ConfirmPurchase",
-      "key": "confirmPurchase",
-      "defaultValue": true
     }
   ]
 }

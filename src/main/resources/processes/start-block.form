@@ -10,16 +10,9 @@
   "type": "default",
   "components": [
     {
-      "text": "### Начало блока курса\nДоступ к курсу открыт в системе 1С. Перейдите к настройке сложности первого блока курса.",
+      "text": "### Начало блока курса\nОплата подтверждена, доступ к курсу открыт. Перейдите к настройке сложности первого блока курса.",
       "type": "text",
       "id": "Text_StartBlockHeader"
-    },
-    {
-      "label": "Готов начать блок",
-      "type": "checkbox",
-      "id": "Field_ReadyStartBlock",
-      "key": "readyStartBlock",
-      "defaultValue": true
     }
   ]
 }

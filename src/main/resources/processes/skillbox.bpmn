@@ -48,7 +48,7 @@
     <bpmn:sequenceFlow id="Flow_0te74v7" sourceRef="Activity_0euctjz" targetRef="Gateway_0wyrd41" />
     <bpmn:sequenceFlow id="Flow_1ulvr12" name="нет" sourceRef="Gateway_0wyrd41" targetRef="Event_0849d4w" />
     <bpmn:sequenceFlow id="Flow_1e6cxmy" name="да" sourceRef="Gateway_0wyrd41" targetRef="Activity_07fzwju">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${mailEnabled==true}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('mailEnabled') == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1625csn" sourceRef="Activity_07fzwju" targetRef="Event_1bgqlxq" />
   </bpmn:process>
@@ -103,15 +103,9 @@
         <bpmn:flowNodeRef>Gateway_0hhlzfi</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_1720cng</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_0psxtuf</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_AuthChoice</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Gateway_AuthChoice</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_Register</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_Login</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_1kedmqx</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_0pbfqi6" name="Бэкенд">
-        <bpmn:flowNodeRef>Activity_RegisterDelegate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_LoginDelegate</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_0xaz3iu</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_0ll75tu</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_1vxr3f3</bpmn:flowNodeRef>
@@ -166,6 +160,9 @@
       <bpmn:outgoing>Flow_1h8q1jr</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:userTask id="Activity_1v7bsv8" name="Завершение задания" camunda:formRef="submit-task" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${resolveReviewTypeDelegate}" event="end" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ieptvf</bpmn:incoming>
       <bpmn:incoming>Flow_1xo3vw0</bpmn:incoming>
       <bpmn:outgoing>Flow_0625ayn</bpmn:outgoing>
@@ -227,34 +224,12 @@
       <bpmn:terminateEventDefinition id="TerminateEventDefinition_1wlp0ei" />
     </bpmn:endEvent>
     <bpmn:startEvent id="Event_0psxtuf" name="Начало">
-      <bpmn:outgoing>Flow_StartToAuthChoice</bpmn:outgoing>
+      <bpmn:outgoing>Flow_StartToBuyCourse</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="Activity_AuthChoice" name="Вход или регистрация" camunda:formRef="auth-choice" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
-      <bpmn:incoming>Flow_StartToAuthChoice</bpmn:incoming>
-      <bpmn:outgoing>Flow_AuthChoiceToGateway</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Gateway_AuthChoice" name="Новый пользователь?" default="Flow_AuthToLogin">
-      <bpmn:incoming>Flow_AuthChoiceToGateway</bpmn:incoming>
-      <bpmn:outgoing>Flow_AuthToRegister</bpmn:outgoing>
-      <bpmn:outgoing>Flow_AuthToLogin</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Activity_Register" name="Регистрация" camunda:formRef="register" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
-      <bpmn:incoming>Flow_AuthToRegister</bpmn:incoming>
-      <bpmn:outgoing>Flow_RegisterToDelegate</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Activity_RegisterDelegate" name="Создание пользователя" camunda:delegateExpression="${registerUserDelegate}">
-      <bpmn:incoming>Flow_RegisterToDelegate</bpmn:incoming>
-      <bpmn:outgoing>Flow_RegisterToBuyCourse</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:userTask id="Activity_Login" name="Авторизация" camunda:formRef="login" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
-      <bpmn:incoming>Flow_AuthToLogin</bpmn:incoming>
-      <bpmn:outgoing>Flow_LoginToDelegate</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Activity_LoginDelegate" name="Проверка учетных данных" camunda:delegateExpression="${loginUserDelegate}">
-      <bpmn:incoming>Flow_LoginToDelegate</bpmn:incoming>
-      <bpmn:outgoing>Flow_LoginToBuyCourse</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:exclusiveGateway id="Gateway_0xaz3iu" name="Куратором или системой?" default="Flow_142miac">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${resolveReviewTypeDelegate}" event="start" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0625ayn</bpmn:incoming>
       <bpmn:outgoing>Flow_142miac</bpmn:outgoing>
       <bpmn:outgoing>Flow_07r4ini</bpmn:outgoing>
@@ -325,8 +300,7 @@
       <bpmn:outgoing>Flow_1mkygza</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_1kedmqx" name="Покупка курса" camunda:formRef="buy-course" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
-      <bpmn:incoming>Flow_RegisterToBuyCourse</bpmn:incoming>
-      <bpmn:incoming>Flow_LoginToBuyCourse</bpmn:incoming>
+      <bpmn:incoming>Flow_StartToBuyCourse</bpmn:incoming>
       <bpmn:outgoing>Flow_1jvh685</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:intermediateThrowEvent id="Event_0unevc2" name="Отправка запроса на оплату в 1С">
@@ -359,7 +333,7 @@
         <bpmn:outgoing>Flow_1n6mm8m</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_0ncrbxu" name="нет" sourceRef="Gateway_0lc7bl2" targetRef="Event_1g237hg">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${txFailed==true}</bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('txFailed') == true}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_1n6mm8m" name="Да" sourceRef="Gateway_0lc7bl2" targetRef="Event_0krp01y" />
       <bpmn:serviceTask id="Activity_1fabhou" name="Откат" isForCompensation="true" camunda:expression="${true}" />
@@ -387,7 +361,7 @@
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_1udlrxi" name="Да" sourceRef="Gateway_0flptj2" targetRef="Activity_0nsyp7b" />
       <bpmn:sequenceFlow id="Flow_0xbz6fw" name="Нет" sourceRef="Gateway_0flptj2" targetRef="Activity_013ntmq">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hasEnoughPoints==false}</bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('hasEnoughPoints') == false}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0uagv7u" sourceRef="Event_0ybcrnd" targetRef="Gateway_0flptj2" />
       <bpmn:association id="Association_18gpdvo" associationDirection="One" sourceRef="Event_1s1esto" targetRef="Activity_1fabhou" />
@@ -399,22 +373,22 @@
     <bpmn:sequenceFlow id="Flow_1cxmc8v" sourceRef="Activity_00uhw5d" targetRef="Gateway_0k3mab8" />
     <bpmn:sequenceFlow id="Flow_1ma5y7g" name="выбор задания" sourceRef="Gateway_0k3mab8" targetRef="Activity_1q5ps4n" />
     <bpmn:sequenceFlow id="Flow_1g1um8y" name="завершить блок" sourceRef="Gateway_0k3mab8" targetRef="Gateway_07izrxe">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${action=='finish_block'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('action') == 'finish_block'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1vxc5xa" name="дождаться проверки" sourceRef="Gateway_0k3mab8" targetRef="Gateway_1y8f3j6">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${action=='wait_review'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('action') == 'wait_review'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0ise6s6" name="Не зачтено" sourceRef="Gateway_1y8f3j6" targetRef="Activity_1ywwizi">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved==false}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('approved') == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_08a4axi" sourceRef="Activity_1ywwizi" targetRef="Gateway_1ao1vt0" />
     <bpmn:sequenceFlow id="Flow_1w7g954" name="Да" sourceRef="Gateway_1ao1vt0" targetRef="Activity_0maqnd5">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${choice=='retry'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('choice') == 'retry'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0eo28iz" name="Нет" sourceRef="Gateway_1ao1vt0" targetRef="Activity_00uhw5d" />
     <bpmn:sequenceFlow id="Flow_1uoe7uz" sourceRef="Activity_1v7bsv8" targetRef="Activity_00uhw5d" />
     <bpmn:sequenceFlow id="Flow_1jqbn67" name="Да" sourceRef="Gateway_07izrxe" targetRef="Activity_1exmn8d">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hasNextBlock==true}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('hasNextBlock') == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1h8q1jr" name="Нет" sourceRef="Gateway_07izrxe" targetRef="Activity_1oowapx" />
     <bpmn:sequenceFlow id="Flow_1ieptvf" name="Нет" sourceRef="Gateway_1y8f3j6" targetRef="Activity_1v7bsv8" />
@@ -430,24 +404,15 @@
     <bpmn:sequenceFlow id="Flow_1kl5aqz" sourceRef="Activity_1exmn8d" targetRef="Activity_13nvox7" />
     <bpmn:sequenceFlow id="Flow_0szpbvk" sourceRef="Activity_1oowapx" targetRef="Activity_07amv92" />
     <bpmn:sequenceFlow id="Flow_0gcmbt2" name="нет" sourceRef="Gateway_0hhlzfi" targetRef="Event_1rae93v">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hasEnoughPoints==false}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('hasEnoughPoints') == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0w2j3wj" name="Да" sourceRef="Gateway_0hhlzfi" targetRef="Event_0vmlofa" />
     <bpmn:sequenceFlow id="Flow_0vxj9gc" sourceRef="Activity_13nvox7" targetRef="Gateway_0hhlzfi" />
     <bpmn:sequenceFlow id="Flow_1h3n85h" sourceRef="Activity_1f5fye8" targetRef="Event_1720cng" />
-    <bpmn:sequenceFlow id="Flow_StartToAuthChoice" sourceRef="Event_0psxtuf" targetRef="Activity_AuthChoice" />
-    <bpmn:sequenceFlow id="Flow_AuthChoiceToGateway" sourceRef="Activity_AuthChoice" targetRef="Gateway_AuthChoice" />
-    <bpmn:sequenceFlow id="Flow_AuthToRegister" name="Регистрация" sourceRef="Gateway_AuthChoice" targetRef="Activity_Register">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${authAction=='register'}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_AuthToLogin" name="Вход" sourceRef="Gateway_AuthChoice" targetRef="Activity_Login" />
-    <bpmn:sequenceFlow id="Flow_RegisterToDelegate" sourceRef="Activity_Register" targetRef="Activity_RegisterDelegate" />
-    <bpmn:sequenceFlow id="Flow_LoginToDelegate" sourceRef="Activity_Login" targetRef="Activity_LoginDelegate" />
-    <bpmn:sequenceFlow id="Flow_RegisterToBuyCourse" sourceRef="Activity_RegisterDelegate" targetRef="Activity_1kedmqx" />
-    <bpmn:sequenceFlow id="Flow_LoginToBuyCourse" sourceRef="Activity_LoginDelegate" targetRef="Activity_1kedmqx" />
+    <bpmn:sequenceFlow id="Flow_StartToBuyCourse" sourceRef="Event_0psxtuf" targetRef="Activity_1kedmqx" />
     <bpmn:sequenceFlow id="Flow_142miac" name="Системой" sourceRef="Gateway_0xaz3iu" targetRef="Activity_1br58gi" />
     <bpmn:sequenceFlow id="Flow_07r4ini" name="Куратором" sourceRef="Gateway_0xaz3iu" targetRef="Activity_1vxr3f3">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${reviewType=='mentor'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('reviewType') == 'mentor'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0ooggaj" sourceRef="Activity_09hefnt" targetRef="Activity_0ll75tu" />
     <bpmn:sequenceFlow id="Flow_1kz9ov0" sourceRef="Activity_0ll75tu" targetRef="Gateway_19t91zs" />
@@ -458,10 +423,10 @@
     <bpmn:sequenceFlow id="Flow_1b8x8li" sourceRef="Activity_044k9ym" targetRef="Gateway_0s3h0aw" />
     <bpmn:sequenceFlow id="Flow_1via8vd" name="Лёгкий" sourceRef="Gateway_0v8owbg" targetRef="Activity_00um4di" />
     <bpmn:sequenceFlow id="Flow_1utal8f" name="Средний" sourceRef="Gateway_0v8owbg" targetRef="Activity_0zniur9">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${difficulty=='medium'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('difficulty') == 'medium'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_19rk3o5" name="Сложный" sourceRef="Gateway_0v8owbg" targetRef="Activity_044k9ym">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${difficulty=='hard'}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('difficulty') == 'hard'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1yiatlp" sourceRef="Activity_07amv92" targetRef="Activity_1f5fye8" />
     <bpmn:sequenceFlow id="Flow_1jvh685" sourceRef="Activity_1kedmqx" targetRef="Activity_13adnc1" />
@@ -497,7 +462,7 @@
         <bpmn:outgoing>Flow_0tq8kwv</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_0y66xtb" name="нет" sourceRef="Gateway_07kymt8" targetRef="Event_0ddh3fm">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${txFailed==true}</bpmn:conditionExpression>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('txFailed') == true}</bpmn:conditionExpression>
       </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0tq8kwv" name="Да" sourceRef="Gateway_07kymt8" targetRef="Event_0bsriws" />
       <bpmn:serviceTask id="Activity_0fxq3yw" name="Откат" isForCompensation="true" camunda:expression="${true}" />
@@ -532,8 +497,8 @@
         <bpmn:outgoing>Flow_0nwbx70</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_133j517" name="Да" sourceRef="Gateway_0cilhxx" targetRef="Activity_05c4ltu">
-        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isRetry==true}</bpmn:conditionExpression>
-      </bpmn:sequenceFlow>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('isRetry') == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0nwbx70" name="Нет" sourceRef="Gateway_0cilhxx" targetRef="Activity_0rjfrcr" />
       <bpmn:startEvent id="Event_1gyhagk">
         <bpmn:outgoing>Flow_07kzko9</bpmn:outgoing>
@@ -745,32 +710,7 @@
           <dc:Bounds x="220" y="128" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_AuthChoice_di" bpmnElement="Activity_AuthChoice">
-        <dc:Bounds x="290" y="130" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_AuthChoice_di" bpmnElement="Gateway_AuthChoice" isMarkerVisible="true">
-        <dc:Bounds x="315" y="245" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="238" y="256" width="71" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_Register_di" bpmnElement="Activity_Register">
-        <dc:Bounds x="220" y="330" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_Login_di" bpmnElement="Activity_Login">
-        <dc:Bounds x="350" y="330" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_RegisterDelegate_di" bpmnElement="Activity_RegisterDelegate">
-        <dc:Bounds x="220" y="550" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_LoginDelegate_di" bpmnElement="Activity_LoginDelegate">
-        <dc:Bounds x="350" y="550" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
+
       <bpmndi:BPMNShape id="BPMNShape_1dxvxht" bpmnElement="Gateway_0xaz3iu" isMarkerVisible="true">
         <dc:Bounds x="1555" y="775" width="50" height="50" />
         <bpmndi:BPMNLabel>
@@ -1233,49 +1173,10 @@
         <di:waypoint x="3910" y="280" />
         <di:waypoint x="4032" y="280" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_StartToAuthChoice_di" bpmnElement="Flow_StartToAuthChoice">
+      <bpmndi:BPMNEdge id="Flow_StartToBuyCourse_di" bpmnElement="Flow_StartToBuyCourse">
         <di:waypoint x="258" y="170" />
-        <di:waypoint x="290" y="170" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_AuthChoiceToGateway_di" bpmnElement="Flow_AuthChoiceToGateway">
-        <di:waypoint x="340" y="210" />
-        <di:waypoint x="340" y="245" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_AuthToRegister_di" bpmnElement="Flow_AuthToRegister">
-        <di:waypoint x="315" y="270" />
-        <di:waypoint x="270" y="270" />
-        <di:waypoint x="270" y="330" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="250" y="252" width="63" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_AuthToLogin_di" bpmnElement="Flow_AuthToLogin">
-        <di:waypoint x="365" y="270" />
-        <di:waypoint x="400" y="270" />
-        <di:waypoint x="400" y="330" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="407" y="252" width="26" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_RegisterToDelegate_di" bpmnElement="Flow_RegisterToDelegate">
-        <di:waypoint x="270" y="410" />
-        <di:waypoint x="270" y="550" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_LoginToDelegate_di" bpmnElement="Flow_LoginToDelegate">
-        <di:waypoint x="400" y="410" />
-        <di:waypoint x="400" y="550" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_RegisterToBuyCourse_di" bpmnElement="Flow_RegisterToBuyCourse">
-        <di:waypoint x="270" y="630" />
-        <di:waypoint x="270" y="660" />
-        <di:waypoint x="480" y="660" />
-        <di:waypoint x="480" y="360" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_LoginToBuyCourse_di" bpmnElement="Flow_LoginToBuyCourse">
-        <di:waypoint x="400" y="630" />
-        <di:waypoint x="400" y="660" />
-        <di:waypoint x="500" y="660" />
-        <di:waypoint x="500" y="360" />
+        <di:waypoint x="500" y="170" />
+        <di:waypoint x="500" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_0xc3vl4" bpmnElement="Flow_142miac">
         <di:waypoint x="1605" y="800" />

@@ -49,10 +49,18 @@ public class AwardPointsDelegate implements JavaDelegate {
     @Transactional
     public void execute(DelegateExecution execution) throws Exception {
         String login = (String) execution.getVariable("login");
+        if (login == null || login.isBlank()) {
+            login = execution.getProcessBusinessKey();
+            if (login != null && login.contains(":")) {
+                login = login.substring(0, login.indexOf(":"));
+            }
+        }
         Long courseId = getLongVariable(execution, "courseId");
         Long taskId = getLongVariable(execution, "taskId");
         Object approvedVar = execution.getVariable("approved");
         boolean approved = approvedVar == null || Boolean.parseBoolean(approvedVar.toString());
+
+        execution.setVariable("txFailed", false);
 
         log.info("Executing award points: login={}, courseId={}, taskId={}, approved={}", login, courseId, taskId, approved);
 

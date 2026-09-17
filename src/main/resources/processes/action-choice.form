@@ -36,6 +36,13 @@
       "validate": {
         "required": true
       }
+    },
+    {
+      "label": "Есть следующий блок курса (если нет — завершить курс)",
+      "type": "checkbox",
+      "id": "Field_hasNextBlock",
+      "key": "hasNextBlock",
+      "defaultValue": true
     }
   ],
   "type": "default"

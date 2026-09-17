@@ -12,6 +12,8 @@ import com.blps.app.infrastructure.crm.CrmClient;
 import com.blps.app.infrastructure.crm.dto.CrmUserUpsertRequest;
 import com.blps.app.infrastructure.messaging.mail.EmailCommandType;
 import com.blps.app.infrastructure.messaging.mail.MailDispatchService;
+import com.blps.app.security.camunda.CamundaUserSyncService;
+import org.camunda.bpm.engine.IdentityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,7 @@ public class AuthManagementService {
     private final PasswordEncoder passwordEncoder;
     private final MailDispatchService mailDispatchService;
     private final CrmClient crmClient;
+    private final IdentityService identityService;
     private final long tokenTtlHours;
 
     public AuthManagementService(AppUserRepository appUserRepository,
@@ -42,12 +45,14 @@ public class AuthManagementService {
                                  PasswordEncoder passwordEncoder,
                                  MailDispatchService mailDispatchService,
                                  CrmClient crmClient,
+                                 IdentityService identityService,
                                  @Value("${app.auth.verification-token-ttl-hours:24}") long tokenTtlHours) {
         this.appUserRepository = appUserRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.mailDispatchService = mailDispatchService;
         this.crmClient = crmClient;
+        this.identityService = identityService;
         this.tokenTtlHours = tokenTtlHours;
     }
 
@@ -119,6 +124,12 @@ public class AuthManagementService {
             ));
         } catch (Exception e) {
             log.warn("Failed to sync new user to CRM: {}", user.getLogin(), e);
+        }
+
+        try {
+            CamundaUserSyncService.syncUser(identityService, normalizedEmail, rawPassword, role);
+        } catch (Exception e) {
+            log.warn("Failed to sync new user to Camunda: {}", user.getLogin(), e);
         }
 
         if (activateImmediately) {

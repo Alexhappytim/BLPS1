@@ -71,4 +71,12 @@ public class CoursePurchase {
     public void markFailed() {
         this.status = CoursePurchaseStatus.FAILED;
     }
+
+    public void resetToPending(String crmInvoiceId, long amount) {
+        this.crmInvoiceId = crmInvoiceId;
+        this.amount = amount;
+        this.status = CoursePurchaseStatus.PENDING_PAYMENT;
+        this.createdAt = OffsetDateTime.now();
+        this.paidAt = null;
+    }
 }

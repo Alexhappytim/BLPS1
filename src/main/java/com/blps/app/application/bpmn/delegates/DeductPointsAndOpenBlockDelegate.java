@@ -45,8 +45,16 @@ public class DeductPointsAndOpenBlockDelegate implements JavaDelegate {
     @Transactional
     public void execute(DelegateExecution execution) throws Exception {
         String login = (String) execution.getVariable("login");
+        if (login == null || login.isBlank()) {
+            login = execution.getProcessBusinessKey();
+            if (login != null && login.contains(":")) {
+                login = login.substring(0, login.indexOf(":"));
+            }
+        }
         Long courseId = getLongVariable(execution, "courseId");
         Long blockId = getLongVariable(execution, "blockId");
+
+        execution.setVariable("txFailed", false);
 
         log.info("Executing open block: login={}, courseId={}, blockId={}", login, courseId, blockId);
 

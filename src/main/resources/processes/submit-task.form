@@ -10,7 +10,7 @@
   "type": "default",
   "components": [
     {
-      "text": "### Выполнение и сдача задания\nВведите ваш ответ или решение задания.",
+      "text": "### Выполнение и сдача задания\nВведите ваш ответ или решение задания. Способ проверки (системой или куратором) определяется автоматически параметрами выбранного задания.",
       "type": "text",
       "id": "Text_SubmitHeader"
     },
@@ -28,26 +28,6 @@
       "type": "textarea",
       "id": "Field_Solution",
       "key": "solution",
-      "validate": {
-        "required": true
-      }
-    },
-    {
-      "label": "Тип проверки",
-      "type": "radio",
-      "id": "Field_ReviewType",
-      "key": "reviewType",
-      "defaultValue": "mentor",
-      "values": [
-        {
-          "label": "Проверка куратором",
-          "value": "mentor"
-        },
-        {
-          "label": "Автоматическая проверка системой",
-          "value": "auto"
-        }
-      ],
       "validate": {
         "required": true
       }

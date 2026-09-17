@@ -37,6 +37,11 @@ public class BpmnDeployTest {
 
                 System.out.println("Task [" + taskId + "] '" + taskName + "' -> formRef: " + formRef + ", groups: " + candidateGroups);
 
+                // Verify login/register are not in BPMN
+                Assertions.assertNotEquals("Activity_AuthChoice", taskId, "Activity_AuthChoice must not be in BPMN");
+                Assertions.assertNotEquals("Activity_Register", taskId, "Activity_Register must not be in BPMN");
+                Assertions.assertNotEquals("Activity_Login", taskId, "Activity_Login must not be in BPMN");
+
                 Assertions.assertNotNull(formRef, "UserTask " + taskId + " (" + taskName + ") must have a camunda:formRef!");
                 Assertions.assertFalse(formRef.isBlank(), "UserTask " + taskId + " formRef cannot be blank!");
 

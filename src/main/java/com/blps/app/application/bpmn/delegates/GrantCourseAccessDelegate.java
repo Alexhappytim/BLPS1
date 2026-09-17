@@ -71,11 +71,19 @@ public class GrantCourseAccessDelegate implements JavaDelegate {
         }
 
         // 1. Mark purchase as PAID if pending
-        CoursePurchase purchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
+        String invoiceId = (String) execution.getVariable("invoiceId");
+        CoursePurchase purchase = null;
+        if (invoiceId != null && !invoiceId.isBlank()) {
+            purchase = coursePurchaseRepository.findByCrmInvoiceId(invoiceId).orElse(null);
+        }
+        if (purchase == null) {
+            purchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
+        }
         if (purchase != null && purchase.getStatus() != CoursePurchaseStatus.PAID) {
             purchase.markPaid();
             coursePurchaseRepository.save(purchase);
-            log.info("Marked purchase as PAID for user [{}] and course [{}]", login, course.getCode());
+            log.info("Marked purchase as PAID for user [{}] and course [{}] (invoiceId: {})",
+                    login, course.getCode(), purchase.getCrmInvoiceId());
         }
 
         // 2. Ensure UserCourseProgress exists so user is enrolled and can progress

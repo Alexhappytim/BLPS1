@@ -116,6 +116,100 @@ public class CamundaProcessService {
         return taskService.createTaskQuery().taskAssignee(login).list();
     }
 
+    private static final List<String> PAYMENT_CONFIRMED_MESSAGE_NAMES = List.of(
+            "Оплата курса подтверждена 1C",
+            "Оплата курса подтверждена 1С",
+            "Message_CrmPaymentConfirmed"
+    );
+
+    public void triggerPaymentConfirmed(String login, Long courseId, boolean success, String invoiceId) {
+        String businessKeyFull = login + ":" + courseId;
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("login", login);
+        variables.put("courseId", courseId);
+        variables.put("paymentSuccess", success);
+        if (invoiceId != null) {
+            variables.put("invoiceId", invoiceId);
+        }
+
+        log.info("Triggering payment confirmation for user [{}], courseId [{}], invoiceId [{}]", login, courseId, invoiceId);
+
+        for (String msgName : PAYMENT_CONFIRMED_MESSAGE_NAMES) {
+            // 1. Попытка корреляции по уникальному invoiceId
+            if (invoiceId != null && !invoiceId.isBlank()) {
+                long count = runtimeService.createExecutionQuery()
+                        .messageEventSubscriptionName(msgName)
+                        .processVariableValueEquals("invoiceId", invoiceId)
+                        .count();
+                if (count > 0) {
+                    runtimeService.createMessageCorrelation(msgName)
+                            .processInstanceVariableEquals("invoiceId", invoiceId)
+                            .setVariables(variables)
+                            .correlateAll();
+                    log.info("Successfully correlated message [{}] by invoiceId [{}] (matched {} instances)", msgName, invoiceId, count);
+                    return;
+                }
+            }
+
+            // 2. Попытка корреляции по полному businessKey (login:courseId)
+            long countFull = runtimeService.createExecutionQuery()
+                    .messageEventSubscriptionName(msgName)
+                    .processInstanceBusinessKey(businessKeyFull)
+                    .count();
+            if (countFull > 0) {
+                runtimeService.createMessageCorrelation(msgName)
+                    .processInstanceBusinessKey(businessKeyFull)
+                    .setVariables(variables)
+                    .correlateAll();
+                log.info("Successfully correlated message [{}] by businessKey [{}]", msgName, businessKeyFull);
+                return;
+            }
+
+            // 3. Попытка корреляции по простому businessKey (только login)
+            long countLoginBk = runtimeService.createExecutionQuery()
+                    .messageEventSubscriptionName(msgName)
+                    .processInstanceBusinessKey(login)
+                    .count();
+            if (countLoginBk > 0) {
+                runtimeService.createMessageCorrelation(msgName)
+                    .processInstanceBusinessKey(login)
+                    .setVariables(variables)
+                    .correlateAll();
+                log.info("Successfully correlated message [{}] by businessKey [{}]", msgName, login);
+                return;
+            }
+
+            // 4. Попытка корреляции по переменной login
+            long countVarLogin = runtimeService.createExecutionQuery()
+                    .messageEventSubscriptionName(msgName)
+                    .processVariableValueEquals("login", login)
+                    .count();
+            if (countVarLogin > 0) {
+                runtimeService.createMessageCorrelation(msgName)
+                    .processInstanceVariableEquals("login", login)
+                    .setVariables(variables)
+                    .correlateAll();
+                log.info("Successfully correlated message [{}] by variable login [{}]", msgName, login);
+                return;
+            }
+
+            // 5. Fallback: если ровно 1 процесс ждет это сообщение
+            long totalWaiting = runtimeService.createExecutionQuery()
+                    .messageEventSubscriptionName(msgName)
+                    .count();
+            if (totalWaiting == 1) {
+                runtimeService.createMessageCorrelation(msgName)
+                    .setVariables(variables)
+                    .correlateAll();
+                log.info("Successfully correlated message [{}] to the single waiting process instance", msgName);
+                return;
+            }
+        }
+
+        log.warn("No matching process instance found for payment confirmation (user={}, courseId={}, invoiceId={})",
+                login, courseId, invoiceId);
+    }
+
     public void completeTask(String taskId, Map<String, Object> variables) {
         log.info("Completing Camunda task {} with variables {}", taskId, variables);
         taskService.complete(taskId, variables);

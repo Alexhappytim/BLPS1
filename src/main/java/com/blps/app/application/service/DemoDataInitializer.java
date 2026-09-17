@@ -33,6 +33,11 @@ public class DemoDataInitializer {
 
             ensureTask(learningTaskRepository, "BE-T-1", "Java quiz", 60, ReviewType.AUTO, null, beBlock1);
             ensureTask(learningTaskRepository, "BE-T-2", "REST сервис", 140, ReviewType.MENTOR, 800L, beBlock2);
+
+            // Экспресс-курс: 1 блок, 1 авто-задание, дающее 1000 баллов для быстрого прохождения всего процесса
+            Course fastCourse = ensureCourse(courseRepository, "FAST", "Экспресс курс", 100);
+            CourseBlock fastBlock = ensureBlock(courseBlockRepository, "FAST-BLK-1", "Быстрый старт", 0, 1, fastCourse);
+            ensureTask(learningTaskRepository, "FAST-T-1", "Финальный квиз", 1000, ReviewType.AUTO, null, fastBlock);
         };
     }
 

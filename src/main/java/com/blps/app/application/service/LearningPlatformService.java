@@ -327,6 +327,13 @@ public class LearningPlatformService {
         } else {
             purchase.markFailed();
         }
+
+        camundaProcessService.triggerPaymentConfirmed(
+                purchase.getUser().getLogin(),
+                purchase.getCourse().getId(),
+                success,
+                invoiceId
+        );
     }
 
     public Page<Course> courses(int page) {
