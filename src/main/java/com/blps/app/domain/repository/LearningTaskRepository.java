@@ -49,4 +49,14 @@ public interface LearningTaskRepository extends JpaRepository<LearningTask, Long
 	Optional<LearningTask> findByCode(String code);
 
 	boolean existsByBlock_Id(Long blockId);
+
+	@Query("""
+			select t
+			from LearningTask t
+			join fetch t.block b
+			join fetch b.course c
+			where b.id = :blockId
+			order by t.id asc
+			""")
+	List<LearningTask> findByBlockIdWithBlockAndCourse(@Param("blockId") Long blockId);
 }

@@ -8,6 +8,7 @@ import com.blps.app.domain.model.CoursePurchase;
 import com.blps.app.domain.model.CoursePurchaseStatus;
 import com.blps.app.domain.model.UserCourseProgress;
 import com.blps.app.domain.repository.AppUserRepository;
+import com.blps.app.domain.repository.CourseBlockRepository;
 import com.blps.app.domain.repository.CoursePurchaseRepository;
 import com.blps.app.domain.repository.CourseRepository;
 import com.blps.app.domain.repository.UserCourseProgressRepository;
@@ -25,6 +26,7 @@ public class GrantCourseAccessDelegateTest {
 
     private AppUserRepository appUserRepository;
     private CourseRepository courseRepository;
+    private CourseBlockRepository courseBlockRepository;
     private CoursePurchaseRepository coursePurchaseRepository;
     private UserCourseProgressRepository userCourseProgressRepository;
     private GrantCourseAccessDelegate delegate;
@@ -33,9 +35,10 @@ public class GrantCourseAccessDelegateTest {
     void setUp() {
         appUserRepository = mock(AppUserRepository.class);
         courseRepository = mock(CourseRepository.class);
+        courseBlockRepository = mock(CourseBlockRepository.class);
         coursePurchaseRepository = mock(CoursePurchaseRepository.class);
         userCourseProgressRepository = mock(UserCourseProgressRepository.class);
-        delegate = new GrantCourseAccessDelegate(appUserRepository, courseRepository, coursePurchaseRepository, userCourseProgressRepository);
+        delegate = new GrantCourseAccessDelegate(appUserRepository, courseRepository, courseBlockRepository, coursePurchaseRepository, userCourseProgressRepository);
     }
 
     @Test

@@ -15,20 +15,14 @@
       "id": "Text_Header"
     },
     {
-      "label": "ID блока курса",
-      "type": "number",
+      "label": "Выберите блок курса",
+      "type": "select",
       "id": "Field_BlockId",
       "key": "blockId",
+      "valuesKey": "availableBlocks",
       "validate": {
         "required": true
       }
-    },
-    {
-      "label": "Стоимость открытия (баллы)",
-      "type": "number",
-      "id": "Field_OpenCost",
-      "key": "openCost",
-      "disabled": true
     }
   ]
 }

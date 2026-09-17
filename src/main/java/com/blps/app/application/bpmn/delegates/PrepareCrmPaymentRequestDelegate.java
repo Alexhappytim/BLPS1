@@ -86,15 +86,8 @@ public class PrepareCrmPaymentRequestDelegate implements JavaDelegate {
             return;
         }
 
-        // Check if there is an existing pending invoice
+        // Lookup existing purchase record to update if present
         CoursePurchase existingPurchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
-        if (existingPurchase != null && existingPurchase.getStatus() == CoursePurchaseStatus.PENDING_PAYMENT) {
-            log.info("Reusing existing pending invoice [{}] for user [{}]", existingPurchase.getCrmInvoiceId(), login);
-            execution.setVariable("invoiceId", existingPurchase.getCrmInvoiceId());
-            execution.setVariable("paymentUrl", "http://localhost/pay/" + existingPurchase.getCrmInvoiceId());
-            execution.setVariable("crmRequestPrepared", true);
-            return;
-        }
 
         // Send invoice request to 1C CRM /courses/invoice
         try {

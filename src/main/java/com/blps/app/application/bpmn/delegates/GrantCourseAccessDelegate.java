@@ -6,6 +6,7 @@ import com.blps.app.domain.model.CoursePurchase;
 import com.blps.app.domain.model.CoursePurchaseStatus;
 import com.blps.app.domain.model.UserCourseProgress;
 import com.blps.app.domain.repository.AppUserRepository;
+import com.blps.app.domain.repository.CourseBlockRepository;
 import com.blps.app.domain.repository.CoursePurchaseRepository;
 import com.blps.app.domain.repository.CourseRepository;
 import com.blps.app.domain.repository.UserCourseProgressRepository;
@@ -23,15 +24,18 @@ public class GrantCourseAccessDelegate implements JavaDelegate {
 
     private final AppUserRepository appUserRepository;
     private final CourseRepository courseRepository;
+    private final CourseBlockRepository courseBlockRepository;
     private final CoursePurchaseRepository coursePurchaseRepository;
     private final UserCourseProgressRepository userCourseProgressRepository;
 
     public GrantCourseAccessDelegate(AppUserRepository appUserRepository,
                                    CourseRepository courseRepository,
+                                   CourseBlockRepository courseBlockRepository,
                                    CoursePurchaseRepository coursePurchaseRepository,
                                    UserCourseProgressRepository userCourseProgressRepository) {
         this.appUserRepository = appUserRepository;
         this.courseRepository = courseRepository;
+        this.courseBlockRepository = courseBlockRepository;
         this.coursePurchaseRepository = coursePurchaseRepository;
         this.userCourseProgressRepository = userCourseProgressRepository;
     }
@@ -91,6 +95,16 @@ public class GrantCourseAccessDelegate implements JavaDelegate {
             UserCourseProgress newProgress = new UserCourseProgress(user, course);
             userCourseProgressRepository.save(newProgress);
             log.info("Created UserCourseProgress for user [{}] in course [{}]", user.getLogin(), course.getCode());
+        }
+
+        // 3. Set initial blockId for the course if not present
+        Object existingBlockId = execution.getVariable("blockId");
+        if (existingBlockId == null) {
+            java.util.List<com.blps.app.domain.model.CourseBlock> blocks = courseBlockRepository.findByCourseIdWithCourse(courseId);
+            if (!blocks.isEmpty()) {
+                execution.setVariable("blockId", blocks.get(0).getId());
+                log.info("Initialized initial blockId [{}] for course [{}]", blocks.get(0).getId(), courseId);
+            }
         }
 
         execution.setVariable("courseAccessGranted", true);

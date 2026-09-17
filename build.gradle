@@ -35,6 +35,9 @@ dependencies {
     // Camunda BPM 7 Spring Boot Starter (Jakarta EE / Spring Boot 3 compatible)
     implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.22.0'
     implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:7.22.0'
+    implementation 'org.camunda.bpm:camunda-engine-plugin-spin:7.22.0'
+    implementation 'org.camunda.spin:camunda-spin-dataformat-json-jackson:7.22.0'
+    implementation 'org.camunda.spin:camunda-spin-core:7.22.0'
 
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 

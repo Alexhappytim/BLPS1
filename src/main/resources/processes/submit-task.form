@@ -15,10 +15,11 @@
       "id": "Text_SubmitHeader"
     },
     {
-      "label": "ID задания",
-      "type": "number",
+      "label": "Выберите задание",
+      "type": "select",
       "id": "Field_TaskId",
       "key": "taskId",
+      "valuesKey": "availableTasks",
       "validate": {
         "required": true
       }

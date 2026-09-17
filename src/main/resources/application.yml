@@ -58,6 +58,8 @@ springdoc:
 
 camunda:
   bpm:
+    authorization:
+      enabled: true
     deployment-resource-pattern:
       - "classpath*:processes/**/*.bpmn"
       - "classpath*:processes/**/*.bpmn20.xml"

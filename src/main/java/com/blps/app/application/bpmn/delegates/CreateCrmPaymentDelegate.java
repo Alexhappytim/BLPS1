@@ -90,13 +90,14 @@ public class CreateCrmPaymentDelegate implements JavaDelegate {
             return;
         }
 
-        // 2. If purchase is already pending, reuse existing invoice
-        CoursePurchase existingPurchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
-        if (existingPurchase != null && existingPurchase.getStatus() == CoursePurchaseStatus.PENDING_PAYMENT) {
-            log.info("Found existing pending invoice [{}] for user [{}]", existingPurchase.getCrmInvoiceId(), login);
-            execution.setVariable("invoiceId", existingPurchase.getCrmInvoiceId());
+        // 2. Check if invoice was already created in this process instance by prepareCrmPaymentRequestDelegate
+        Object invoiceIdVar = execution.getVariable("invoiceId");
+        if (invoiceIdVar != null && !invoiceIdVar.toString().isBlank()) {
+            log.info("CRM course invoice already created with invoiceId [{}] for user [{}] in current process", invoiceIdVar, login);
             return;
         }
+
+        CoursePurchase existingPurchase = coursePurchaseRepository.findByUserAndCourse(user, course).orElse(null);
 
         // 3. Request invoice creation in 1C (CRM)
         CrmCourseInvoiceDto invoice = null;
@@ -105,15 +106,21 @@ public class CreateCrmPaymentDelegate implements JavaDelegate {
             invoice = crmClient.createCourseInvoice(new CrmCourseInvoiceRequest(login, course.getCode(), course.getPrice()));
             log.info("Received invoice from CRM: invoiceId [{}] paymentUrl [{}]", invoice.invoiceId(), invoice.paymentUrl());
 
-            CoursePurchase newPurchase = new CoursePurchase(user, course, invoice.invoiceId(), course.getPrice());
-            coursePurchaseRepository.save(newPurchase);
+            CoursePurchase purchase = existingPurchase != null ? existingPurchase : new CoursePurchase(user, course, invoice.invoiceId(), course.getPrice());
+            if (existingPurchase != null) {
+                purchase.resetToPending(invoice.invoiceId(), course.getPrice());
+            }
+            coursePurchaseRepository.save(purchase);
 
             execution.setVariable("invoiceId", invoice.invoiceId());
             execution.setVariable("paymentUrl", invoice.paymentUrl());
         } catch (Exception e) {
             log.warn("CRM JCA call failed (CRM service offline or network issue): {}. Creating fallback invoice.", e.getMessage());
             String mockInvoiceId = UUID.randomUUID().toString();
-            CoursePurchase fallbackPurchase = new CoursePurchase(user, course, mockInvoiceId, course.getPrice());
+            CoursePurchase fallbackPurchase = existingPurchase != null ? existingPurchase : new CoursePurchase(user, course, mockInvoiceId, course.getPrice());
+            if (existingPurchase != null) {
+                fallbackPurchase.resetToPending(mockInvoiceId, course.getPrice());
+            }
             coursePurchaseRepository.save(fallbackPurchase);
 
             execution.setVariable("invoiceId", mockInvoiceId);

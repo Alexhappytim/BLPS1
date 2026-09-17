@@ -26,13 +26,6 @@
       "type": "textarea",
       "id": "Field_DraftSolution",
       "key": "draftSolution"
-    },
-    {
-      "label": "Готов отправить на проверку",
-      "type": "checkbox",
-      "id": "Field_ReadyToSubmit",
-      "key": "readyToSubmit",
-      "defaultValue": true
     }
   ]
 }

@@ -38,15 +38,36 @@ public class CamundaUserSyncService {
             ensureGroup(identityService, "ROLE_ADMIN", "Administrators");
             ensureGroup(identityService, "ROLE_MENTOR", "Curators and Mentors");
             ensureGroup(identityService, "ROLE_USER", "Students");
+            ensureGroup(identityService, "camunda-admin", "Camunda Administrators");
 
-            // Grant application access to tasklist for all roles
+            // 1. Grant application access:
+            // Tasklist is accessible to students, mentors and admins
             grantAppAccess(authorizationService, "ROLE_ADMIN", "tasklist");
             grantAppAccess(authorizationService, "ROLE_MENTOR", "tasklist");
             grantAppAccess(authorizationService, "ROLE_USER", "tasklist");
+            // Cockpit and Admin are accessible ONLY to ROLE_ADMIN
             grantAppAccess(authorizationService, "ROLE_ADMIN", "cockpit");
             grantAppAccess(authorizationService, "ROLE_ADMIN", "admin");
 
-            // Known default passwords
+            // 2. Grant resource permissions:
+            // Admin has ALL access
+            grantResourcePermissions(authorizationService, "ROLE_ADMIN", Resources.TASK, Permissions.ALL);
+            grantResourcePermissions(authorizationService, "ROLE_ADMIN", Resources.PROCESS_DEFINITION, Permissions.ALL);
+            grantResourcePermissions(authorizationService, "ROLE_ADMIN", Resources.PROCESS_INSTANCE, Permissions.ALL);
+            grantResourcePermissions(authorizationService, "ROLE_ADMIN", Resources.DEPLOYMENT, Permissions.ALL);
+            grantResourcePermissions(authorizationService, "ROLE_ADMIN", Resources.BATCH, Permissions.ALL);
+
+            // Mentors can read & update tasks (for review) and read process definitions/instances
+            grantResourcePermissions(authorizationService, "ROLE_MENTOR", Resources.TASK, Permissions.READ, Permissions.UPDATE);
+            grantResourcePermissions(authorizationService, "ROLE_MENTOR", Resources.PROCESS_DEFINITION, Permissions.READ);
+            grantResourcePermissions(authorizationService, "ROLE_MENTOR", Resources.PROCESS_INSTANCE, Permissions.READ);
+
+            // Students can read & update their tasks and start process instances
+            grantResourcePermissions(authorizationService, "ROLE_USER", Resources.TASK, Permissions.READ, Permissions.UPDATE);
+            grantResourcePermissions(authorizationService, "ROLE_USER", Resources.PROCESS_DEFINITION, Permissions.READ, Permissions.CREATE_INSTANCE);
+            grantResourcePermissions(authorizationService, "ROLE_USER", Resources.PROCESS_INSTANCE, Permissions.CREATE, Permissions.READ);
+
+            // 3. Known default passwords & Sync Users
             Map<String, String> defaultPasswords = Map.of(
                     "admin", "admin12345",
                     "admin@blps.local", "admin12345",
@@ -63,30 +84,36 @@ public class CamundaUserSyncService {
                 syncUser(identityService, user.getLogin(), pwd, user.getRole());
             }
 
-            // Ensure a default filter exists so tasks are immediately visible in Camunda Tasklist
+            // 4. Create separate Role-Based Tasklist Filters
             try {
-                Filter filter = filterService.createFilterQuery().filterName("Все задачи").singleResult();
-                if (filter == null) {
-                    Map<String, Object> filterProperties = new HashMap<>();
-                    filterProperties.put("description", "Все активные задачи процессов");
-                    filterProperties.put("priority", 10);
-                    filterProperties.put("refresh", true);
+                // Filter 1: "Мои задачи" — assigned to the current user (${currentUser()})
+                ensureFilter(filterService, taskService, authorizationService,
+                        "Мои задачи",
+                        "Задачи, назначенные персонально на текущего пользователя",
+                        10,
+                        taskService.createTaskQuery().taskAssigneeExpression("${currentUser()}"),
+                        List.of("ROLE_USER", "ROLE_MENTOR", "ROLE_ADMIN")
+                );
 
-                    filter = filterService.newTaskFilter("Все задачи")
-                            .setQuery(taskService.createTaskQuery())
-                            .setProperties(filterProperties);
-                    filterService.saveFilter(filter);
-                    log.info("Created default Camunda Tasklist filter: Все задачи");
-                }
+                // Filter 2: "На проверку (Менторы)" — review tasks for mentors
+                ensureFilter(filterService, taskService, authorizationService,
+                        "На проверку (Менторы)",
+                        "Задачи студентов, ожидающие проверки ментором",
+                        20,
+                        taskService.createTaskQuery().taskCandidateGroup("ROLE_MENTOR"),
+                        List.of("ROLE_MENTOR", "ROLE_ADMIN")
+                );
 
-                // Ensure filter read permission
-                if (filter != null) {
-                    grantFilterAccess(authorizationService, "ROLE_ADMIN", filter.getId());
-                    grantFilterAccess(authorizationService, "ROLE_MENTOR", filter.getId());
-                    grantFilterAccess(authorizationService, "ROLE_USER", filter.getId());
-                }
+                // Filter 3: "Все задачи (Администратор)" — full visibility for admins only
+                ensureFilter(filterService, taskService, authorizationService,
+                        "Все задачи (Администратор)",
+                        "Все активные задачи процессов системы",
+                        30,
+                        taskService.createTaskQuery(),
+                        List.of("ROLE_ADMIN")
+                );
             } catch (Exception e) {
-                log.warn("Failed to create default Camunda filter: {}", e.getMessage());
+                log.warn("Failed to configure Camunda filters: {}", e.getMessage());
             }
         };
     }
@@ -127,6 +154,17 @@ public class CamundaUserSyncService {
                     log.info("Added Camunda user {} to group {}", login, groupId);
                 }
             }
+
+            if (role == AppUserRole.ADMIN) {
+                boolean adminMember = identityService.createUserQuery()
+                        .userId(login)
+                        .memberOfGroup("camunda-admin")
+                        .count() > 0;
+                if (!adminMember) {
+                    identityService.createMembership(login, "camunda-admin");
+                    log.info("Added Camunda admin {} to camunda-admin group", login);
+                }
+            }
         }
     }
 
@@ -162,6 +200,58 @@ public class CamundaUserSyncService {
             }
         } catch (Exception e) {
             log.debug("Could not set app authorization: {}", e.getMessage());
+        }
+    }
+
+    private void grantResourcePermissions(AuthorizationService authService, String groupId, Resources resource, Permissions... permissions) {
+        try {
+            long count = authService.createAuthorizationQuery()
+                    .groupIdIn(groupId)
+                    .resourceType(resource)
+                    .resourceId("*")
+                    .count();
+            if (count == 0) {
+                Authorization auth = authService.createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
+                auth.setGroupId(groupId);
+                auth.setResource(resource);
+                auth.setResourceId("*");
+                for (Permissions p : permissions) {
+                    auth.addPermission(p);
+                }
+                authService.saveAuthorization(auth);
+                log.info("Granted {} permissions on resource {}", groupId, resource.resourceName());
+            }
+        } catch (Exception e) {
+            log.debug("Could not set resource authorization for {}: {}", groupId, e.getMessage());
+        }
+    }
+
+    private void ensureFilter(FilterService filterService,
+                              TaskService taskService,
+                              AuthorizationService authorizationService,
+                              String filterName,
+                              String description,
+                              int priority,
+                              org.camunda.bpm.engine.task.TaskQuery query,
+                              List<String> groupIds) {
+        Filter filter = filterService.createFilterQuery().filterName(filterName).singleResult();
+        if (filter == null) {
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("description", description);
+            properties.put("priority", priority);
+            properties.put("refresh", true);
+
+            filter = filterService.newTaskFilter(filterName)
+                    .setQuery(query)
+                    .setProperties(properties);
+            filterService.saveFilter(filter);
+            log.info("Created Tasklist filter: {}", filterName);
+        }
+
+        if (filter != null) {
+            for (String groupId : groupIds) {
+                grantFilterAccess(authorizationService, groupId, filter.getId());
+            }
         }
     }
 

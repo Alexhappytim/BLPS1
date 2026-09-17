@@ -12,6 +12,15 @@ import java.util.Collection;
 public class BpmnDeployTest {
 
     @Test
+    public void testVariableSerialization() {
+        for (java.lang.reflect.Method m : org.camunda.bpm.engine.variable.Variables.class.getMethods()) {
+            if (m.getName().toLowerCase().contains("json") || m.getName().toLowerCase().contains("object")) {
+                System.out.println("Variables method: " + m.getName() + " -> " + m.getReturnType());
+            }
+        }
+    }
+
+    @Test
     public void testBpmnModel() throws Exception {
         try (InputStream is = getClass().getResourceAsStream("/processes/skillbox.bpmn")) {
             Assertions.assertNotNull(is, "skillbox.bpmn must be present in classpath");

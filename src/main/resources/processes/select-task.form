@@ -10,16 +10,16 @@
   "type": "default",
   "components": [
     {
-      "text": "### Выбор задания\nВыберите ID практического задания из открытого блока для выполнения.",
+      "text": "### Выбор задания\nВыберите практическое задание вашего текущего блока курса (например, для Экспресс курса выберите задание 6).",
       "type": "text",
       "id": "Text_SelectTaskHeader"
     },
     {
-      "label": "ID задания",
-      "type": "number",
+      "label": "Выберите задание",
+      "type": "select",
       "id": "Field_SelectedTaskId",
       "key": "taskId",
-      "defaultValue": 1,
+      "valuesKey": "availableTasks",
       "validate": {
         "required": true
       }

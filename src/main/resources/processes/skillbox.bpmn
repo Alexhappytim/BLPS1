@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.50.1">
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.51.0">
   <bpmn:message id="Message_DiffChoice" name="Выбор сложности отправлен" />
   <bpmn:message id="Message_CoeffReady" name="Коэффициент установлен" />
   <bpmn:message id="Message_TaskSubmit" name="Задание отправлено на проверку" />
@@ -82,6 +82,9 @@
     </bpmn:intermediateCatchEvent>
   </bpmn:process>
   <bpmn:process id="Process_00qvb5l" name="Платформа обучения" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:extensionElements>
+      <camunda:executionListener delegateExpression="${initLoginListener}" event="start" />
+    </bpmn:extensionElements>
     <bpmn:laneSet id="LaneSet_10e6u7j">
       <bpmn:lane id="Lane_0spk41z" name="Фронтенд">
         <bpmn:flowNodeRef>Gateway_0k3mab8</bpmn:flowNodeRef>
@@ -96,10 +99,7 @@
         <bpmn:flowNodeRef>Activity_1fe12y3</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_14qqkdk</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_1exmn8d</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_BackToBlock_Target</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_1oowapx</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_1rae93v</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_0vmlofa</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Gateway_0hhlzfi</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_1720cng</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_0psxtuf</bpmn:flowNodeRef>
@@ -140,7 +140,7 @@
       <bpmn:outgoing>Flow_1g1um8y</bpmn:outgoing>
       <bpmn:outgoing>Flow_1vxc5xa</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Activity_1ywwizi" name="Выбор перепройти или нет" camunda:formRef="retry-choice" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1ywwizi" name="Выбор перепройти или нет" camunda:formRef="retry-choice" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:incoming>Flow_0ise6s6</bpmn:incoming>
       <bpmn:outgoing>Flow_08a4axi</bpmn:outgoing>
     </bpmn:userTask>
@@ -149,33 +149,39 @@
       <bpmn:outgoing>Flow_1w7g954</bpmn:outgoing>
       <bpmn:outgoing>Flow_0eo28iz</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Activity_00uhw5d" name="Выбор действия" camunda:formRef="action-choice" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
-      <bpmn:incoming>Flow_1uoe7uz</bpmn:incoming>
+    <bpmn:userTask id="Activity_00uhw5d" name="Выбор действия" camunda:formRef="action-choice" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_1ieptvf</bpmn:incoming>
       <bpmn:incoming>Flow_0eo28iz</bpmn:incoming>
       <bpmn:outgoing>Flow_1cxmc8v</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:exclusiveGateway id="Gateway_07izrxe" name="Есть следующий блок?" default="Flow_1h8q1jr">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${checkNextBlockListener}" event="start" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1g1um8y</bpmn:incoming>
       <bpmn:outgoing>Flow_1jqbn67</bpmn:outgoing>
       <bpmn:outgoing>Flow_1h8q1jr</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Activity_1v7bsv8" name="Завершение задания" camunda:formRef="submit-task" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1v7bsv8" name="Завершение задания" camunda:formRef="submit-task" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:extensionElements>
         <camunda:executionListener delegateExpression="${resolveReviewTypeDelegate}" event="end" />
+        <camunda:taskListener delegateExpression="${loadFormOptionsListener}" event="create" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_1ieptvf</bpmn:incoming>
       <bpmn:incoming>Flow_1xo3vw0</bpmn:incoming>
       <bpmn:outgoing>Flow_0625ayn</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1uoe7uz</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_0maqnd5" name="Выполнение задания" camunda:formRef="do-task" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_0maqnd5" name="Выполнение задания" camunda:formRef="do-task" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:incoming>Flow_0mqoju7</bpmn:incoming>
       <bpmn:incoming>Flow_1w7g954</bpmn:incoming>
       <bpmn:outgoing>Flow_1xo3vw0</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_1q5ps4n" name="Выбор задания" camunda:formRef="select-task" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1q5ps4n" name="Выбор задания" camunda:formRef="select-task" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${loadFormOptionsListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_02sd55u</bpmn:incoming>
       <bpmn:incoming>Flow_1ma5y7g</bpmn:incoming>
+      <bpmn:incoming>Flow_0gcmbt2</bpmn:incoming>
       <bpmn:outgoing>Flow_0mqoju7</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:exclusiveGateway id="Gateway_1y8f3j6" name="Успешно?" default="Flow_1ieptvf">
@@ -184,36 +190,27 @@
       <bpmn:outgoing>Flow_1ieptvf</bpmn:outgoing>
       <bpmn:outgoing>Flow_0ise6s6</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Activity_1fe12y3" name="Выбор сложности блока" camunda:formRef="select-difficulty" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1fe12y3" name="Выбор сложности блока" camunda:formRef="select-difficulty" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:incoming>Flow_0cbxaon</bpmn:incoming>
       <bpmn:outgoing>Flow_1g91q6l</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_14qqkdk" name="Начало блока курса" camunda:formRef="start-block" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_14qqkdk" name="Начало блока курса" camunda:formRef="start-block" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:incoming>Flow_1jhkmpm</bpmn:incoming>
+      <bpmn:incoming>Flow_0w2j3wj</bpmn:incoming>
       <bpmn:outgoing>Flow_0cbxaon</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:intermediateCatchEvent id="Event_BackToBlock_Target" name="BackToBlock">
-      <bpmn:outgoing>Flow_BackToBlock</bpmn:outgoing>
-      <bpmn:linkEventDefinition id="LinkEventDefinition_catch_01" name="BackToBlock" />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="Flow_BackToBlock" sourceRef="Event_BackToBlock_Target" targetRef="Activity_1exmn8d" />
-    <bpmn:userTask id="Activity_1exmn8d" name="Выбор блока" camunda:formRef="open-block" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1exmn8d" name="Выбор блока" camunda:formRef="open-block" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${loadFormOptionsListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0lkv8ik</bpmn:incoming>
       <bpmn:incoming>Flow_1jqbn67</bpmn:incoming>
-      <bpmn:incoming>Flow_BackToBlock</bpmn:incoming>
       <bpmn:outgoing>Flow_1kl5aqz</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_1oowapx" name="Нажатие кнопки завершить курс" camunda:formRef="finish-course" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1oowapx" name="Нажатие кнопки завершить курс" camunda:formRef="finish-course" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
       <bpmn:incoming>Flow_1h8q1jr</bpmn:incoming>
       <bpmn:outgoing>Flow_0szpbvk</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:intermediateThrowEvent id="Event_1rae93v" name="Перенаправление&#10;на прошлый блок">
-      <bpmn:incoming>Flow_0gcmbt2</bpmn:incoming>
-      <bpmn:linkEventDefinition id="LinkEventDefinition_100redi" name="BackToBlock" />
-    </bpmn:intermediateThrowEvent>
-    <bpmn:endEvent id="Event_0vmlofa" name="Конец блока">
-      <bpmn:incoming>Flow_0w2j3wj</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_0hhlzfi" name="Достаточно баллов?" default="Flow_0w2j3wj">
       <bpmn:incoming>Flow_0vxj9gc</bpmn:incoming>
       <bpmn:outgoing>Flow_0w2j3wj</bpmn:outgoing>
@@ -223,7 +220,10 @@
       <bpmn:incoming>Flow_1h3n85h</bpmn:incoming>
       <bpmn:terminateEventDefinition id="TerminateEventDefinition_1wlp0ei" />
     </bpmn:endEvent>
-    <bpmn:startEvent id="Event_0psxtuf" name="Начало">
+    <bpmn:startEvent id="Event_0psxtuf" name="Начало" camunda:initiator="initiator">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${initLoginListener}" event="end" />
+      </bpmn:extensionElements>
       <bpmn:outgoing>Flow_StartToBuyCourse</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:exclusiveGateway id="Gateway_0xaz3iu" name="Куратором или системой?" default="Flow_142miac">
@@ -299,7 +299,10 @@
       <bpmn:incoming>Flow_07763p1</bpmn:incoming>
       <bpmn:outgoing>Flow_1mkygza</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Activity_1kedmqx" name="Покупка курса" camunda:formRef="buy-course" camunda:formRefBinding="latest" camunda:candidateGroups="ROLE_USER,ROLE_ADMIN">
+    <bpmn:userTask id="Activity_1kedmqx" name="Покупка курса" camunda:formRef="buy-course" camunda:formRefBinding="latest" camunda:assignee="${execution.getVariable(&#39;login&#39;) != null ? execution.getVariable(&#39;login&#39;) : (execution.getVariable(&#39;initiator&#39;) != null ? execution.getVariable(&#39;initiator&#39;) : &#39;student@blps.local&#39;)}" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:extensionElements>
+        <camunda:taskListener delegateExpression="${loadFormOptionsListener}" event="create" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_StartToBuyCourse</bpmn:incoming>
       <bpmn:outgoing>Flow_1jvh685</bpmn:outgoing>
     </bpmn:userTask>
@@ -386,12 +389,11 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('choice') == 'retry'}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0eo28iz" name="Нет" sourceRef="Gateway_1ao1vt0" targetRef="Activity_00uhw5d" />
-    <bpmn:sequenceFlow id="Flow_1uoe7uz" sourceRef="Activity_1v7bsv8" targetRef="Activity_00uhw5d" />
     <bpmn:sequenceFlow id="Flow_1jqbn67" name="Да" sourceRef="Gateway_07izrxe" targetRef="Activity_1exmn8d">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('hasNextBlock') == true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1h8q1jr" name="Нет" sourceRef="Gateway_07izrxe" targetRef="Activity_1oowapx" />
-    <bpmn:sequenceFlow id="Flow_1ieptvf" name="Нет" sourceRef="Gateway_1y8f3j6" targetRef="Activity_1v7bsv8" />
+    <bpmn:sequenceFlow id="Flow_1ieptvf" name="Да" sourceRef="Gateway_1y8f3j6" targetRef="Activity_00uhw5d" />
     <bpmn:sequenceFlow id="Flow_1xo3vw0" sourceRef="Activity_0maqnd5" targetRef="Activity_1v7bsv8" />
     <bpmn:sequenceFlow id="Flow_0625ayn" sourceRef="Activity_1v7bsv8" targetRef="Gateway_0xaz3iu" />
     <bpmn:sequenceFlow id="Flow_0mqoju7" sourceRef="Activity_1q5ps4n" targetRef="Activity_0maqnd5" />
@@ -403,10 +405,10 @@
     <bpmn:sequenceFlow id="Flow_0lkv8ik" sourceRef="Event_0aejlv6" targetRef="Activity_1exmn8d" />
     <bpmn:sequenceFlow id="Flow_1kl5aqz" sourceRef="Activity_1exmn8d" targetRef="Activity_13nvox7" />
     <bpmn:sequenceFlow id="Flow_0szpbvk" sourceRef="Activity_1oowapx" targetRef="Activity_07amv92" />
-    <bpmn:sequenceFlow id="Flow_0gcmbt2" name="нет" sourceRef="Gateway_0hhlzfi" targetRef="Event_1rae93v">
+    <bpmn:sequenceFlow id="Flow_0gcmbt2" name="нет" sourceRef="Gateway_0hhlzfi" targetRef="Activity_1q5ps4n">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('hasEnoughPoints') == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0w2j3wj" name="Да" sourceRef="Gateway_0hhlzfi" targetRef="Event_0vmlofa" />
+    <bpmn:sequenceFlow id="Flow_0w2j3wj" name="Да" sourceRef="Gateway_0hhlzfi" targetRef="Activity_14qqkdk" />
     <bpmn:sequenceFlow id="Flow_0vxj9gc" sourceRef="Activity_13nvox7" targetRef="Gateway_0hhlzfi" />
     <bpmn:sequenceFlow id="Flow_1h3n85h" sourceRef="Activity_1f5fye8" targetRef="Event_1720cng" />
     <bpmn:sequenceFlow id="Flow_StartToBuyCourse" sourceRef="Event_0psxtuf" targetRef="Activity_1kedmqx" />
@@ -497,8 +499,8 @@
         <bpmn:outgoing>Flow_0nwbx70</bpmn:outgoing>
       </bpmn:exclusiveGateway>
       <bpmn:sequenceFlow id="Flow_133j517" name="Да" sourceRef="Gateway_0cilhxx" targetRef="Activity_05c4ltu">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('isRetry') == true}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('isRetry') == true}</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
       <bpmn:sequenceFlow id="Flow_0nwbx70" name="Нет" sourceRef="Gateway_0cilhxx" targetRef="Activity_0rjfrcr" />
       <bpmn:startEvent id="Event_1gyhagk">
         <bpmn:outgoing>Flow_07kzko9</bpmn:outgoing>
@@ -680,22 +682,10 @@
         <dc:Bounds x="3280" y="200" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_14pifod" bpmnElement="Event_1rae93v">
-        <dc:Bounds x="3322" y="322" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="3375" y="310" width="90" height="40" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0jtq22k" bpmnElement="Event_0vmlofa">
-        <dc:Bounds x="3322" y="412" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="3308" y="382" width="64" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_05z7mml" bpmnElement="Gateway_0hhlzfi" isMarkerVisible="true">
         <dc:Bounds x="3225" y="315" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="3220" y="286" width="59" height="27" />
+          <dc:Bounds x="3284.5" y="326" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1ffchas" bpmnElement="Event_1720cng">
@@ -710,7 +700,6 @@
           <dc:Bounds x="220" y="128" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-
       <bpmndi:BPMNShape id="BPMNShape_1dxvxht" bpmnElement="Gateway_0xaz3iu" isMarkerVisible="true">
         <dc:Bounds x="1555" y="775" width="50" height="50" />
         <bpmndi:BPMNLabel>
@@ -1062,12 +1051,6 @@
           <dc:Bounds x="2011" y="282" width="19" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_0whydxc" bpmnElement="Flow_1uoe7uz">
-        <di:waypoint x="1960" y="320" />
-        <di:waypoint x="2010" y="320" />
-        <di:waypoint x="2010" y="400" />
-        <di:waypoint x="2050" y="400" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_0xpl0ci" bpmnElement="Flow_1jqbn67">
         <di:waypoint x="2485" y="380" />
         <di:waypoint x="2680" y="380" />
@@ -1149,18 +1132,21 @@
         <di:waypoint x="3740" y="800" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1fyhls1" bpmnElement="Flow_0gcmbt2">
-        <di:waypoint x="3275" y="340" />
-        <di:waypoint x="3322" y="340" />
+        <di:waypoint x="3250" y="365" />
+        <di:waypoint x="3250" y="470" />
+        <di:waypoint x="1570" y="470" />
+        <di:waypoint x="1570" y="360" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="3287" y="323" width="17" height="14" />
+          <dc:Bounds x="2261" y="450" width="17" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_0mb57ak" bpmnElement="Flow_0w2j3wj">
-        <di:waypoint x="3250" y="365" />
-        <di:waypoint x="3250" y="430" />
-        <di:waypoint x="3322" y="430" />
+        <di:waypoint x="3250" y="315" />
+        <di:waypoint x="3250" y="120" />
+        <di:waypoint x="790" y="120" />
+        <di:waypoint x="790" y="280" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="3254" y="393" width="14" height="14" />
+          <dc:Bounds x="2010" y="102" width="14" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0vxj9gc_di" bpmnElement="Flow_0vxj9gc">
@@ -1258,6 +1244,10 @@
         <di:waypoint x="500" y="860" />
         <di:waypoint x="500" y="1012" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PaymentSentToWait_di" bpmnElement="Flow_PaymentSentToWait">
+        <di:waypoint x="518" y="1030" />
+        <di:waypoint x="672" y="1030" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1ivl86p" bpmnElement="Flow_0i3wxrz">
         <di:waypoint x="690" y="1012" />
         <di:waypoint x="690" y="860" />
@@ -1305,10 +1295,6 @@
       <bpmndi:BPMNEdge id="Flow_1bc8y69_di" bpmnElement="Flow_1bc8y69">
         <di:waypoint x="500" y="1048" />
         <di:waypoint x="500" y="1422" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_PaymentSentToWait_di" bpmnElement="Flow_PaymentSentToWait">
-        <di:waypoint x="518" y="1030" />
-        <di:waypoint x="672" y="1030" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16uprh6_di" bpmnElement="Flow_16uprh6">
         <di:waypoint x="690" y="1422" />

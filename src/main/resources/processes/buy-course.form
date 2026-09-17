@@ -10,16 +10,16 @@
   "type": "default",
   "components": [
     {
-      "text": "### Покупка курса\nПодтвердите выбор курса для записи и открытия доступа через систему 1С.",
+      "text": "### Покупка курса\nВыберите желаемый курс для записи и открытия доступа через систему 1С.",
       "type": "text",
       "id": "Text_BuyHeader"
     },
     {
-      "label": "ID курса",
-      "type": "number",
+      "label": "Выберите курс",
+      "type": "select",
       "id": "Field_CourseId",
       "key": "courseId",
-      "defaultValue": 1,
+      "valuesKey": "availableCourses",
       "validate": {
         "required": true
       }
